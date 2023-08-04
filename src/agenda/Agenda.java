@@ -1,47 +1,100 @@
 package agenda;
 
-import java.util.Date;
 import java.util.Scanner;
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class Agenda {
-    public void iniciar() {
-        Scanner scan = new Scanner(System.in);
+    private static Scanner scan = new Scanner(System.in);
+    private Map<String, MenuOptions> menus;
 
-        int opcao = 0;
+    private MenuOptions currentMenu;
+    private boolean continueInAgenda;
 
-        System.out.println("##########");
-        System.out.println("# AGENDA #");
-        System.out.println("##########");
+    public Agenda() {
+        this.setUpMenus();
+        this.setCurrentMenu("main");
+        this.continueInAgenda = true;
+    }
 
-        do {
-            showOpcoes();
+    private void setUpMenus() {
+        // main menu
+        MenuOptions mMain = new MenuOptions(
+            new Option("[1] - Criar", () -> this.setCurrentMenu("create")),
+            new Option("[2] - Alterar", () -> {}),
+            new Option("[3] - Cancelar", () -> {}),
+            new Option("[4] - Visualizar", () -> {}),
+            new Option("[5] - Sair", () -> this.finish())
+        );
 
-            boolean keepAsking = true;
+        // create menu
+        MenuOptions mCreate = new MenuOptions(
+            new Option("[1] - Criar evento", () -> {}),
+            new Option("[2] - Criar lembrete", () -> {}),
+            new Option("[3] - Criar tarefa", () -> {}),
+            new Option("[4] - Voltar", () -> this.setCurrentMenu("main"))
+        );
 
-            while (keepAsking) {
-                System.out.print("Opcao: ");
+        this.menus = new HashMap<>();
 
-                try {
-                    opcao = Integer.parseInt(scan.nextLine());
+        // store the menus
+        this.menus.put("main", mMain);
+        this.menus.put("create", mCreate);
+    }
 
-                    keepAsking = false;
-                } catch (Exception e) {
-                    System.out.println("Digite umaa opcao valida");
-                }
+    public void start() {
+        int option = 0;
+
+        this.showTitle();
+
+        // show options in the terminal for the user to choose one and, then, the action related to that option is called
+        while (continueInAgenda) {
+            this.currentMenu.showOptions();
+            
+            option = this.chooseOption();
+
+            System.out.println("===================================================");
+
+            this.currentMenu.chooseOptionAction(option);
+        }
+    }
+
+    private void finish() {
+        continueInAgenda = false;
+    }
+
+    private void showTitle() {
+        System.out.println("===================================================");
+        System.out.println("   +-----+");
+        System.out.println("   |  :  | +-----  +----- |\\    | +--.   +-----+");
+        System.out.println("   |  :  | |       |      | \\   | |   \\  |  .  |");
+        System.out.println("   +-----+ |  ---+ +---   |  \\  | | :  | |_____|");
+        System.out.println("   |     | |     | |      |   \\ | |   /  |     |");
+        System.out.println("   |     | +-----+ +----- |    \\| +--*   |     |");
+        System.out.println("===================================================");
+    }
+
+    private int chooseOption() {
+        boolean keepAsking = true;
+        int option = 0;
+
+        while (keepAsking) {
+            System.out.print("Opção: ");
+
+            try {
+                option = Integer.parseInt(scan.nextLine());
+
+                keepAsking = false;
+            } catch (Exception e) {
+                System.out.println("[!] Digite uma opção válida");
             }
+        }
 
-        } while (opcao != 5);
+        return option;
     }
 
-    public void showOpcoes() {
-        System.out.println("[1] Criar");
-        System.out.println("[2] Alterar");
-        System.out.println("[3] Cancelar");
-        System.out.println("[4] Visualizar");
-        System.out.println("[5] Sair");
-    }
-
-    public void criarEvento(String name, String descricao, Date dataInicio, Date dataTermino) {
-
+    private void setCurrentMenu(String name) {
+        this.currentMenu = this.menus.get(name);
     }
 }

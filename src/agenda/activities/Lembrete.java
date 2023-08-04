@@ -1,4 +1,4 @@
-package agenda;
+package agenda.activities;
 
 import java.util.Date;
 
