@@ -3,13 +3,14 @@ package agenda.activities;
 import java.util.Date;
 
 public class AtividadeAgenda {
+    private static long baseId = 0;
     private long id;
     private String nome;
     private Date dataInicio;
     private Date dataTermino;
 
-    public AtividadeAgenda(long id, String nome, Date dataInicio, Date dataTermino) {
-        this.id = id;
+    public AtividadeAgenda(String nome, Date dataInicio, Date dataTermino) {
+        this.id = baseId++;
         this.nome = nome;
         this.dataInicio = dataInicio;
         this.dataTermino = dataTermino;

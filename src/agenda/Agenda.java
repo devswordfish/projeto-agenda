@@ -94,6 +94,15 @@ public class Agenda {
         return option;
     }
 
+    private void createTarefa() {
+
+    }
+
+    private void createEvento() {}
+    
+    private void createLembrete() {} 
+ 
+
     private void setCurrentMenu(String name) {
         this.currentMenu = this.menus.get(name);
     }

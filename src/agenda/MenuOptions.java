@@ -4,7 +4,7 @@ public class MenuOptions {
     private Option[] options;
 
     public MenuOptions(Option ...options) {
-        this.options = options.clone();
+        this.options = options;
     }
 
     public void showOptions() {
