@@ -12,11 +12,11 @@ public class Evento extends AgendaActivity {
 
     @Override
     public void visualize() {
-        System.out.println("Evento");
-        System.out.println("    Nome: " + this.name);
-        System.out.println("    Descrição: " + this.description);
-        System.out.println("    Início: " + this.formatStartDateTime("dd/MM/yyyy HH:mm:ss"));
-        System.out.println("    Fim: " + this.formatEndDateTime("dd/MM/yyyy HH:mm:ss"));
+        System.out.println("Evento:");
+        System.out.println("    Nome.......: " + this.name);
+        System.out.println("    Descrição..: " + this.description);
+        System.out.println("    Início.....: " + this.formatStartDateTime("dd/MM/yyyy HH:mm:ss"));
+        System.out.println("    Fim........: " + this.formatEndDateTime("dd/MM/yyyy HH:mm:ss"));
     }
 
     public String getDescription() {

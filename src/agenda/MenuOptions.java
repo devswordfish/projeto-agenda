@@ -1,7 +1,5 @@
 package agenda;
 
-import java.util.Scanner;
-
 public class MenuOptions {
     private Option[] options;
 
@@ -15,26 +13,8 @@ public class MenuOptions {
         }
     }
 
-    public int inputOption(Scanner scanner) {
-        int option = 0;
-
-        while (true) {
-            System.out.print("Opção: ");
-
-            try {
-                option = Integer.parseInt(scanner.nextLine());
-
-                if (option < 1 || option > this.options.length) {
-                    System.out.println("[!] Digite um número entre 1 e " + this.options.length);
-                } else {
-                    break;
-                }
-            } catch (Exception e) {
-                System.out.println("[!] Digite um número");
-            }
-        }
-
-        return option;
+    public int getTotalOptions() {
+        return this.options.length;
     }
 
     public void chooseOptionAction(int option) {

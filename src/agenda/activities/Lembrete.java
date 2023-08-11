@@ -9,10 +9,8 @@ public class Lembrete extends AgendaActivity {
 
     @Override
     public void visualize() {
-        System.out.println("Lembrete");
-        System.out.println("    Nome: " + this.name);
-        System.out.println("    Data: " + this.formatStartDateTime("dd/MM/yyyy HH:mm:ss"));
+        System.out.println("Lembrete:");
+        System.out.println("    Nome..: " + this.name);
+        System.out.println("    Data..: " + this.formatStartDateTime("dd/MM/yyyy HH:mm:ss"));
     }
-
-    
 }
