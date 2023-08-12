@@ -8,8 +8,8 @@ public class MenuOptions {
     }
 
     public void showOptions() {
-        for (Option option : this.options) {
-            System.out.println(option.getOption());
+        for (int i = 1; i <= this.options.length; i++) {
+            System.out.format("[%d] - %s\n", i, this.options[i].getOption());
         }
     }
 

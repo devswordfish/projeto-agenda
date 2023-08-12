@@ -5,14 +5,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public abstract class AgendaActivity implements Serializable {
-    private static long baseId = 0;
-    private long id;
     protected String name;
     protected LocalDateTime startDateTime;
     protected LocalDateTime endDateTime;
 
     public AgendaActivity(String name, LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        this.id = baseId++;
         this.name = name;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
@@ -20,12 +17,8 @@ public abstract class AgendaActivity implements Serializable {
 
     public abstract void visualize();    
 
-    public long getId() {
-        return id;
-    }
-
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String nome) {
@@ -33,7 +26,7 @@ public abstract class AgendaActivity implements Serializable {
     }
 
     public LocalDateTime getStartDateTime() {
-        return startDateTime;
+        return this.startDateTime;
     }
 
     public String formatStartDateTime(String pattern) {
@@ -45,7 +38,7 @@ public abstract class AgendaActivity implements Serializable {
     }
 
     public LocalDateTime getEndDateTime() {
-        return endDateTime;
+        return this.endDateTime;
     }
 
     public String formatEndDateTime(String pattern) {
