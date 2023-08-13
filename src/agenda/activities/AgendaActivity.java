@@ -15,7 +15,7 @@ public abstract class AgendaActivity implements Serializable {
         this.endDateTime = endDateTime;
     }
 
-    public abstract void visualize();    
+    public abstract void show();
 
     public String getName() {
         return this.name;

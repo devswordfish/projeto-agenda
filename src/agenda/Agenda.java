@@ -12,9 +12,11 @@ import java.io.ObjectOutputStream;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 
 import java.util.Scanner;
+import java.util.stream.Stream;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -56,11 +58,11 @@ public class Agenda {
         );
 
         MenuOptions mVisualization = new MenuOptions(
-            new Option("Ver eventos", () -> System.out.println("Opção indisponível")),
-            new Option("Ver lembretes", () -> System.out.println("Opção indisponível")),
-            new Option("Ver tarefas", () -> System.out.println("Opção indisponível")),
-            new Option("Ver todos", () -> System.out.println("Opção indisponível")),
-            new Option("Filtrar por data", () -> System.out.println("Opção indisponível")),
+            new Option("Ver eventos", () -> this.showEventos()),
+            new Option("Ver lembretes", () -> this.showLembretes()),
+            new Option("Ver tarefas", () -> this.showTarefas()),
+            new Option("Ver todos", () -> this.showActivities()),
+            new Option("Filtrar por data", () -> this.showActivitiesByDate()),
             new Option("Voltar", () -> this.setCurrentMenu("main"))
         );
 
@@ -84,8 +86,12 @@ public class Agenda {
             System.out.println();
             int option = this.inputOption(1, this.currentMenu.getTotalOptions());
 
+            this.divisor();
+
             this.currentMenu.chooseOptionAction(option);
         }
+
+        this.clear();
     }
 
     private void finish() {
@@ -191,8 +197,6 @@ public class Agenda {
     /* criação das atividades da agenda */
 
     public void createTarefa() {
-        this.divisor();
-
         // pega o nome da tarefa
         System.out.print("Digite o nome da tarefa: ");
         String name = scan.nextLine();
@@ -201,9 +205,7 @@ public class Agenda {
         LocalDate date = this.inputDate("Digite a data da tarefa (formato - dia/mês/ano): ");
 
         // verifica se a data informada já passou
-        if (this.hasDatePassed(date)) {
-            this.warningMessage("A data informada já passou");
-        }
+        if (this.hasDatePassed(date)) this.warningMessage("A data informada já passou");
 
         // cria a tarefa
         Tarefa tarefa = new Tarefa(
@@ -212,20 +214,18 @@ public class Agenda {
             LocalDateTime.of(date, LocalTime.of(23, 59, 59)) // fim do dia
         );
 
-        this.activities.add(tarefa);
+        this.addAgendaActivity(tarefa);
 
         this.saveActivities();
 
         System.out.println();
         System.out.println("Tarefa criada com sucesso!");
-        tarefa.visualize();
+        tarefa.show();
 
         scan.nextLine();
     }
 
     public void createEvento() {
-        this.divisor();
-
         // pega o nome do evento
         System.out.print("Digite o nome do evento: ");
         String name = scan.nextLine();
@@ -241,17 +241,13 @@ public class Agenda {
         LocalDate startDate = this.inputDate("Digite a data de início do evento (formato - dia/mês/ano): ");
 
         // verifica se a data informada já passou
-        if (this.hasDatePassed(startDate)) {
-            this.warningMessage("A data informada já passou");
-        }
+        if (this.hasDatePassed(startDate)) this.warningMessage("A data informada já passou");
 
         // pega o horário do início do evento
         LocalTime startTime = this.inputTime("Digite o horário de início do evento (formato - horas:minutos:segundos): ");
         
         // verifica se o horário informado já passou
-        if (this.hasTimePassed(startDate, startTime)) {
-            this.warningMessage("O horário informado já passou");
-        }
+        if (this.hasTimePassed(startDate, startTime)) this.warningMessage("O horário informado já passou");
 
         LocalDateTime startDateTime = LocalDateTime.of(startDate, startTime);
 
@@ -269,9 +265,8 @@ public class Agenda {
         }
 
         // verifica se a data informada já passou
-        if (this.hasDatePassed(endDate)) {
-            this.warningMessage("A data informada já passou");
-        }
+        if (this.hasDatePassed(endDate)) this.warningMessage("A data informada já passou");
+
 
         // pega o horário do término do evento
         LocalTime endTime = this.inputTime("Digite o horário de término do evento (formato - horas:minutos:segundos): ");
@@ -284,29 +279,25 @@ public class Agenda {
         }
 
         // verifica se o horário informado já passou
-        if (this.hasTimePassed(endDate, endTime)) {
-            this.warningMessage("O horário informado já passou");
-        }
+        if (this.hasTimePassed(endDate, endTime)) this.warningMessage("O horário informado já passou");
 
         LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
 
         // cria o evento
         Evento evento = new Evento(name, description, startDateTime, endDateTime);
 
-        this.activities.add(evento);
+        this.addAgendaActivity(evento);
 
         this.saveActivities();
 
         System.out.println();
-        System.out.println("Evento criado com sucesso");
-        evento.visualize();
+        System.out.println("Evento criado com sucesso!");
+        evento.show();
         
         scan.nextLine();
     }
     
     public void createLembrete() {
-        this.divisor();
-
         // pega o nome do lembrete
         System.out.print("Digite o nome do lembrete: ");
         String name = scan.nextLine();
@@ -315,30 +306,26 @@ public class Agenda {
         LocalDate date = inputDate("Digite a data do lembrete (formato - dia/mês/ano): ");
 
         // verifica se a data informada já passou
-        if (this.hasDatePassed(date)) {
-            this.warningMessage("A data informada já passou");
-        }
+        if (this.hasDatePassed(date)) this.warningMessage("A data informada já passou");
 
         // pega o horário de quando o lembrete deve ser ativado
         LocalTime time = this.inputTime("Digite o horário do lembrete (formato - horas:minutos:segundos): ");
-        
+
         // verifica se o horário informado já passou
-        if (this.hasTimePassed(date, time)) {
-            this.warningMessage("O horário informado já passou");
-        }
+        if (this.hasTimePassed(date, time)) this.warningMessage("O horário informado já passou");
 
         LocalDateTime dateTime = LocalDateTime.of(date, time);
 
         // cria o lembrete
         Lembrete lembrete = new Lembrete(name, dateTime, dateTime);
 
-        this.activities.add(lembrete);
+        this.addAgendaActivity(lembrete);
 
         this.saveActivities();
 
         System.out.println();
-        System.out.println("Lembrete criado com sucesso");
-        lembrete.visualize();
+        System.out.println("Lembrete criado com sucesso!");
+        lembrete.show();
 
         scan.nextLine();
     } 
@@ -361,11 +348,137 @@ public class Agenda {
 
     /* visualização das atividades da agenda */
 
-    public void visualizeTarefas() {}
+    public void showTarefas() {
+        LocalDateTime curDateTime = null;
 
-    public void visualizeEventos() {}
+        for (AgendaActivity agendaActivity : this.activities) {
+            if (agendaActivity.getClass() == Tarefa.class) {
+                LocalDateTime activityDateTime = agendaActivity.getStartDateTime();
+                
+                if (curDateTime != activityDateTime) {
+                    if (curDateTime != null) System.out.println();
+                    
+                    curDateTime = activityDateTime;
+                    
+                    System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+                
+                System.out.println("    Tarefa - " + agendaActivity.getName());
+            }
+        }
 
-    public void visualizeLembretes() {}
+        scan.nextLine();
+    }
+
+    public void showEventos() {
+        LocalDateTime curDateTime = null;
+
+        for (AgendaActivity agendaActivity : this.activities) {
+            if (agendaActivity.getClass() == Evento.class) {                
+                LocalDateTime activityDateTime = agendaActivity.getStartDateTime();
+                
+                if (curDateTime != activityDateTime) {
+                    if (curDateTime != null) System.out.println();
+                    
+                    curDateTime = activityDateTime;
+                    
+                    System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+                
+                System.out.println("    Evento - " + agendaActivity.getName());
+            }
+        }
+
+        scan.nextLine();
+    }
+
+    public void showLembretes() {
+        LocalDateTime curDateTime = null;
+
+        for (AgendaActivity agendaActivity : this.activities) {
+            if (agendaActivity.getClass() == Lembrete.class) {
+                LocalDateTime activityDateTime = agendaActivity.getStartDateTime();
+                
+                if (curDateTime != activityDateTime) {
+                    if (curDateTime != null) System.out.println();
+                    
+                    curDateTime = activityDateTime;
+                    
+                    System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+                
+                System.out.println("    Lembrete - " + agendaActivity.getName());
+            }
+        }
+
+        scan.nextLine();
+    }
+
+    public void showActivities() {
+        LocalDateTime curDateTime = null;
+
+        for (AgendaActivity activity : this.activities) {
+            LocalDateTime activityDateTime = activity.getStartDateTime();
+
+            if (curDateTime != activityDateTime) {
+                if (curDateTime != null) System.out.println();
+
+                curDateTime = activityDateTime;
+
+                System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            }
+
+            String display = "";
+            if      (activity.getClass() == Tarefa.class)   display = "Tarefa - " + activity.getName();
+            else if (activity.getClass() == Evento.class)   display = "Evento - " + activity.getName();
+            else if (activity.getClass() == Lembrete.class) display = "Lembrete - " + activity.getName();
+
+            System.out.println("    " + display);
+        }
+
+        scan.nextLine();
+    }
+
+    public void showActivitiesByDate() {
+        LocalDate date = this.inputDate("Digite a data (formato - dia/mês/ano): ");
+
+        Stream<AgendaActivity> filteredActivities =
+            this.activities
+                .stream()
+                .filter(activity ->
+                    LocalDateTime
+                        .of(
+                            activity.getStartDateTime().getYear(),
+                            activity.getStartDateTime().getMonth(),
+                            activity.getStartDateTime().getDayOfMonth(),
+                            0,
+                            0
+                        )
+                    .isEqual(
+                        LocalDateTime.of(
+                            date.getYear(),
+                            date.getMonth(),
+                            date.getDayOfMonth(),
+                            0,
+                            0
+                        )
+                    )
+                );
+
+
+        System.out.println("--- " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        filteredActivities.forEach(activity -> {
+            String display = "";
+            if      (activity.getClass() == Tarefa.class)   display = "Tarefa - " + activity.getName();
+            else if (activity.getClass() == Evento.class)   display = "Evento - " + activity.getName();
+            else if (activity.getClass() == Lembrete.class) display = "Lembrete - " + activity.getName();
+
+            System.out.println("    " + display);
+        });
+
+        scan.nextLine();
+    }
 
     public boolean hasDatePassed(LocalDate date) {
         return date.isBefore(LocalDate.now());
@@ -377,6 +490,26 @@ public class Agenda {
 
     private void setCurrentMenu(String name) {
         this.currentMenu = this.menus.get(name);
+    }
+
+    // insere a atividade ordenada por data
+    public void addAgendaActivity(AgendaActivity activity) {
+        LocalDateTime activityDateTime = activity.getStartDateTime();
+        
+        // binary search para achar a posição na qual a atividade deve ser inserida (a atividade é sempre inserida por último nas atividades referentes ao mesmo dia)
+        int l = 0;
+        int r = this.activities.size() - 1;
+
+        while (l <= r) {
+            int m = (l + r) / 2;
+
+            LocalDateTime middleActivityDatetime = this.activities.get(m).getStartDateTime();
+
+            if (activityDateTime.isBefore(middleActivityDatetime)) r = m - 1;
+            else                                                   l = m + 1;
+        }
+
+        this.activities.add(l, activity);
     }
 
     @SuppressWarnings("unchecked")

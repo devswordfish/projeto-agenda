@@ -9,7 +9,7 @@ public class MenuOptions {
 
     public void showOptions() {
         for (int i = 1; i <= this.options.length; i++) {
-            System.out.format("[%d] - %s\n", i, this.options[i].getOption());
+            System.out.format("[%d] - %s\n", i, this.options[i - 1].getOption());
         }
     }
 

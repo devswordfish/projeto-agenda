@@ -8,7 +8,7 @@ public class Tarefa extends AgendaActivity {
     }
 
     @Override
-    public void visualize() {
+    public void show() {
         System.out.println("Tarefa:");
         System.out.println("    Nome..: " + this.name);
         System.out.println("    Dia...: " + this.formatStartDateTime("dd/MM/yyy"));

@@ -11,7 +11,7 @@ public class Evento extends AgendaActivity {
     }
 
     @Override
-    public void visualize() {
+    public void show() {
         System.out.println("Evento:");
         System.out.println("    Nome.......: " + this.name);
         System.out.println("    Descrição..: " + this.description);
