@@ -19,6 +19,16 @@ public class Evento extends AgendaActivity {
         System.out.println("    Término....: " + this.formatEndDateTime("dd/MM/yyyy HH:mm:ss"));
     }
 
+    @Override
+    public void showOneLine() {
+        System.out.format(
+            "    Evento - %s : %s -> %s\n",
+            this.name,
+            this.formatStartTime("hh:mm:ss"),
+            this.formatEndDateTime("dd/MM/yyyy hh:mm:ss")
+        );
+    }
+
     public String getDescription() {
         return this.description;
     }

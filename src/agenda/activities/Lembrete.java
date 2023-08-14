@@ -13,4 +13,13 @@ public class Lembrete extends AgendaActivity {
         System.out.println("    Nome..: " + this.name);
         System.out.println("    Data..: " + this.formatStartDateTime("dd/MM/yyyy HH:mm:ss"));
     }
+
+    @Override
+    public void showOneLine() {
+        System.out.format(
+            "    Lembrete - %s : %s\n",
+            this.name,
+            this.formatEndTime("HH:mm:ss")
+        );
+    }
 }

@@ -1,7 +1,9 @@
 package agenda.activities;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public abstract class AgendaActivity implements Serializable {
@@ -16,6 +18,35 @@ public abstract class AgendaActivity implements Serializable {
     }
 
     public abstract void show();
+    public abstract void showOneLine();
+
+    /* formata date/time */
+
+    public String formatStartDateTime(String pattern) {
+        return this.startDateTime.format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    public String formatStartDate(String pattern) {
+        return this.getStartDate().format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    public String formatStartTime(String pattern) {
+        return this.getStartTime().format(DateTimeFormatter.ofPattern(pattern));
+    }
+    
+    public String formatEndDateTime(String pattern) {
+        return this.endDateTime.format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    public String formatEndDate(String pattern) {
+        return this.getEndDate().format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    public String formatEndTime(String pattern) {
+        return this.getEndTime().format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    /* getters e setters */
 
     public String getName() {
         return this.name;
@@ -29,8 +60,20 @@ public abstract class AgendaActivity implements Serializable {
         return this.startDateTime;
     }
 
-    public String formatStartDateTime(String pattern) {
-        return this.startDateTime.format(DateTimeFormatter.ofPattern(pattern));
+    public LocalDate getStartDate() {
+        return LocalDate.of(
+            this.startDateTime.getYear(),
+            this.startDateTime.getMonthValue(),
+            this.startDateTime.getDayOfMonth()
+        );
+    }
+
+    public LocalTime getStartTime() {
+        return LocalTime.of(
+            this.startDateTime.getHour(),
+            this.startDateTime.getMinute(),
+            this.startDateTime.getSecond()
+        );
     }
 
     public void setStartDateTime(LocalDateTime dataInicio) {
@@ -41,8 +84,20 @@ public abstract class AgendaActivity implements Serializable {
         return this.endDateTime;
     }
 
-    public String formatEndDateTime(String pattern) {
-        return this.endDateTime.format(DateTimeFormatter.ofPattern(pattern));
+    public LocalDate getEndDate() {
+        return LocalDate.of(
+            this.endDateTime.getYear(),
+            this.endDateTime.getMonthValue(),
+            this.endDateTime.getDayOfMonth()
+        );
+    }
+
+    public LocalTime getEndTime() {
+        return LocalTime.of(
+            this.endDateTime.getHour(),
+            this.endDateTime.getMinute(),
+            this.endDateTime.getSecond()
+        );
     }
 
     public void setEndDateTime(LocalDateTime dataTermino) {
