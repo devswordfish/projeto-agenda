@@ -12,8 +12,8 @@ import java.io.ObjectOutputStream;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import java.util.Scanner;
 import java.util.function.Predicate;
@@ -42,9 +42,9 @@ public class Agenda {
     private void setUpMenus() {
         // menu principal
         MenuOptions mMain = new MenuOptions(
-            new Option("Criar", () -> this.setCurrentMenu("create")),
+            new Option("Criar", () -> this.setCurrentMenu("creation")),
             new Option("Alterar", () -> System.out.println("Opção indisponível")),
-            new Option("Cancelar", () -> System.out.println("Opção indisponível")),
+            new Option("Cancelar", () -> this.setCurrentMenu("cancellation")),
             new Option("Visualizar", () -> this.setCurrentMenu("visualization")),
             new Option("Sair", () -> this.finish())
         );
@@ -57,6 +57,7 @@ public class Agenda {
             new Option("Voltar", () -> this.setCurrentMenu("main"))
         );
 
+        // menu de visualização
         MenuOptions mVisualization = new MenuOptions(
             new Option("Ver eventos", () -> this.showEventos()),
             new Option("Ver lembretes", () -> this.showLembretes()),
@@ -66,12 +67,21 @@ public class Agenda {
             new Option("Voltar", () -> this.setCurrentMenu("main"))
         );
 
+        // menu de cancelamento
+        MenuOptions mCancelation = new MenuOptions(
+            new Option("Cancelar evento", () -> this.cancelEvento()),
+            new Option("Cancelar lembrete", () -> this.cancelLembrete()),
+            new Option("Cancelar tarefa", () -> this.cancelTarefa()),
+            new Option("Voltar", () -> this.setCurrentMenu("main"))
+        );
+
         this.menus = new HashMap<>();
 
         // salva os menus
         this.menus.put("main", mMain);
-        this.menus.put("create", mCreate);
+        this.menus.put("creation", mCreate);
         this.menus.put("visualization", mVisualization);
+        this.menus.put("cancellation", mCancelation);
     }
 
     public void start() {
@@ -116,6 +126,8 @@ public class Agenda {
         System.out.println("   |     | +-----+ +----- |    \\| +--°   |     |");
     }
 
+    /* mensagens da agenda */
+
     // divisor entre menus
     private void divisor() {
         System.out.println("===================================================");
@@ -146,7 +158,7 @@ public class Agenda {
             try {
                 option = Integer.parseInt(scan.nextLine());
 
-                // a opção digitada está fora do alcance de opções válidas (1 até quantidade de opções)
+                // a opção digitada está fora do alcance de opções válidas (minOption até maxOption)
                 if (option < minOption || option > maxOption) {
                     this.errorMessage("Digite um número entre " + minOption + " e " + maxOption);
                 } else {
@@ -258,13 +270,12 @@ public class Agenda {
         Evento evento = new Evento(name, description, startDateTime, endDateTime);
 
         this.addAgendaActivity(evento);
-
         this.saveActivities();
 
         System.out.println();
         System.out.println("Evento criado com sucesso!");
         evento.showStats();
-        
+
         scan.nextLine();
     }
     
@@ -291,7 +302,6 @@ public class Agenda {
         Lembrete lembrete = new Lembrete(name, dateTime);
 
         this.addAgendaActivity(lembrete);
-
         this.saveActivities();
 
         System.out.println();
@@ -316,7 +326,6 @@ public class Agenda {
         Tarefa tarefa = new Tarefa(name, date);
 
         this.addAgendaActivity(tarefa);
-
         this.saveActivities();
 
         System.out.println();
@@ -336,52 +345,92 @@ public class Agenda {
 
     /* cancelamento das atividades da agenda */
 
-    public void cancelEvento() {}
+    public void cancelEvento() {
+        this.cancelationDisplay(this.filterActivities(activity -> activity.getClass() == Evento.class), "Sem eventos");
+        this.cancelActivity("Evento deletado com sucesso!");
+    }
 
-    public void cancelLembrete() {}
+    public void cancelLembrete() {
+        this.cancelationDisplay(this.filterActivities(activity -> activity.getClass() == Lembrete.class), "Sem lembretes");
+        this.cancelActivity("Lembrete deletado com sucesso!");
+    }
 
-    public void cancelTarefa() {}
+    public void cancelTarefa() {
+        this.cancelationDisplay(this.filterActivities(activity -> activity.getClass() == Tarefa.class), "Sem tarefas");
+        this.cancelActivity("Tarefa deletado com sucesso!");
+    }
+
+    public void cancelActivity(String successMessage) {
+        int option = this.inputOption(0, activities.size());
+        
+        if (option != 0) {
+            this.activities.remove(activities.get(option - 1));            
+            this.saveActivities();
+
+            System.out.println();
+            System.out.println(successMessage);
+
+            scan.nextLine();
+        }
+    }
+
+    // interface genérica para cancelar
+    public void cancelationDisplay(List<AgendaActivity> activities, String fallback) {
+        if (activities.size() == 0) {
+            System.out.println(fallback);
+        } else {
+            System.out.println("[0] - Voltar");
+            
+            for (int i = 0; i < activities.size(); i++) {
+                System.out.format("[%d] - %s\n", i + 1, activities.get(i).getName());
+            }
+        }
+    }
 
     /* visualização das atividades da agenda */
 
     public void showEventos() {
-        this.displayActivities(this.filterActivities(activity -> activity.getClass() == Evento.class));
+        this.visualizationDisplay(this.filterActivities(activity -> activity.getClass() == Evento.class), "Sem eventos");
     }
 
     public void showLembretes() {
-        this.displayActivities(this.filterActivities(activity -> activity.getClass() == Lembrete.class));
+        this.visualizationDisplay(this.filterActivities(activity -> activity.getClass() == Lembrete.class), "Sem lembretes");
     }
 
     public void showTarefas() {
-        this.displayActivities(this.filterActivities(activity -> activity.getClass() == Tarefa.class));
+        this.visualizationDisplay(this.filterActivities(activity -> activity.getClass() == Tarefa.class), "Sem tarefas");
     }
 
     public void showActivities() {
-        this.displayActivities(this.activities);
+        this.visualizationDisplay(this.activities, "Sem eventos/lembretes/atividades");
     }
 
     public void showActivitiesByDate() {
         LocalDate date = this.inputDate("Digite a data (formato - dia/mês/ano): ");
 
-        this.displayActivities(this.filterActivities(activity -> activity.getStartDate().isEqual(date)));
+        this.visualizationDisplay(this.filterActivities(activity -> activity.getStartDate().isEqual(date)), "Sem eventos/lembretes/atividades nesse dia");
     }
 
     // interface genérica para visualização
-    public void displayActivities(List<AgendaActivity> activities) {
-        LocalDate curDateTime = null;
-
-        for (AgendaActivity activity : activities) {
-            LocalDate activityDate = activity.getStartDate();
-        
-            if (!activityDate.equals((curDateTime))) {
-                if (curDateTime != null) System.out.println();
-
-                curDateTime = activityDate;
-
-                System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+    public void visualizationDisplay(List<AgendaActivity> activities, String fallback) {
+        if (activities.size() == 0) {
+            System.out.println(fallback);
+        } else {
+            LocalDate curDateTime = null;
+            
+            for (AgendaActivity activity : activities) {
+                LocalDate activityDate = activity.getStartDate();
+                
+                if (!activityDate.equals((curDateTime))) {
+                    if (curDateTime != null) System.out.println();
+                    
+                    curDateTime = activityDate;
+                    
+                    System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+                
+                activity.show();
             }
-
-            activity.show();
         }
 
         scan.nextLine();
