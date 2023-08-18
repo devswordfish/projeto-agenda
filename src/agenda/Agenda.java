@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 
 import java.util.Scanner;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -264,7 +263,7 @@ public class Agenda {
 
         System.out.println();
         System.out.println("Evento criado com sucesso!");
-        evento.show();
+        evento.showStats();
         
         scan.nextLine();
     }
@@ -289,7 +288,7 @@ public class Agenda {
         LocalDateTime dateTime = LocalDateTime.of(date, time);
 
         // cria o lembrete
-        Lembrete lembrete = new Lembrete(name, dateTime, dateTime);
+        Lembrete lembrete = new Lembrete(name, dateTime);
 
         this.addAgendaActivity(lembrete);
 
@@ -297,7 +296,7 @@ public class Agenda {
 
         System.out.println();
         System.out.println("Lembrete criado com sucesso!");
-        lembrete.show();
+        lembrete.showStats();
 
         scan.nextLine();
     } 
@@ -314,11 +313,7 @@ public class Agenda {
         if (this.hasDatePassed(date)) this.warningMessage("A data informada já passou");
 
         // cria a tarefa
-        Tarefa tarefa = new Tarefa(
-            name,
-            LocalDateTime.of(date, LocalTime.of(0, 0, 0)), // começo do dia
-            LocalDateTime.of(date, LocalTime.of(23, 59, 59)) // fim do dia
-        );
+        Tarefa tarefa = new Tarefa(name, date);
 
         this.addAgendaActivity(tarefa);
 
@@ -326,7 +321,7 @@ public class Agenda {
 
         System.out.println();
         System.out.println("Tarefa criada com sucesso!");
-        tarefa.show();
+        tarefa.showStats();
 
         scan.nextLine();
     }
@@ -350,97 +345,49 @@ public class Agenda {
     /* visualização das atividades da agenda */
 
     public void showEventos() {
-        LocalDateTime curDateTime = null;
-
-        for (AgendaActivity activity : this.filterActivities(activity -> activity.getClass() == Evento.class)) {
-            LocalDateTime activityDateTime = activity.getStartDateTime();
-            
-            if (curDateTime != activityDateTime) {
-                if (curDateTime != null) System.out.println();
-                
-                curDateTime = activityDateTime;
-                
-                System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            }
-            
-            activity.showOneLine();
-        }
-
-        scan.nextLine();
+        this.displayActivities(this.filterActivities(activity -> activity.getClass() == Evento.class));
     }
 
     public void showLembretes() {
-        LocalDateTime curDateTime = null;
-
-        for (AgendaActivity activity : this.filterActivities(activity -> activity.getClass() == Lembrete.class)) {
-            LocalDateTime activityDateTime = activity.getStartDateTime();
-
-            if (curDateTime != activityDateTime) {
-                if (curDateTime != null) System.out.println();
-                
-                curDateTime = activityDateTime;
-                
-                System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            }
-            
-            activity.showOneLine();
-        }
-
-        scan.nextLine();
+        this.displayActivities(this.filterActivities(activity -> activity.getClass() == Lembrete.class));
     }
 
     public void showTarefas() {
-        LocalDateTime curDateTime = null;
-
-        for (AgendaActivity activity : this.filterActivities(activity -> activity.getClass() == Tarefa.class)) {
-            LocalDateTime activityDateTime = activity.getStartDateTime();
-
-            if (curDateTime != activityDateTime) {
-                if (curDateTime != null) System.out.println();
-                
-                curDateTime = activityDateTime;
-                
-                System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            }
-
-            activity.showOneLine();
-        }
-
-        scan.nextLine();
+        this.displayActivities(this.filterActivities(activity -> activity.getClass() == Tarefa.class));
     }
 
     public void showActivities() {
-        LocalDateTime curDateTime = null;
-
-        for (AgendaActivity activity : this.activities) {
-            LocalDateTime activityDateTime = activity.getStartDateTime();
-
-            if (curDateTime != activityDateTime) {
-                if (curDateTime != null) System.out.println();
-
-                curDateTime = activityDateTime;
-
-                System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            }
-
-            activity.showOneLine();
-        }
-
-        scan.nextLine();
+        this.displayActivities(this.activities);
     }
 
     public void showActivitiesByDate() {
         LocalDate date = this.inputDate("Digite a data (formato - dia/mês/ano): ");
 
-        System.out.println("--- " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        this.displayActivities(this.filterActivities(activity -> activity.getStartDate().isEqual(date)));
+    }
+
+    // interface genérica para visualização
+    public void displayActivities(List<AgendaActivity> activities) {
+        LocalDate curDateTime = null;
+
+        for (AgendaActivity activity : activities) {
+            LocalDate activityDate = activity.getStartDate();
         
-        this
-            .filterActivities(activity -> activity.getStartDate().isEqual(date))
-            .forEach(activity -> activity.showOneLine());
+            if (!activityDate.equals((curDateTime))) {
+                if (curDateTime != null) System.out.println();
+
+                curDateTime = activityDate;
+
+                System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            }
+
+            activity.show();
+        }
 
         scan.nextLine();
     }
 
+    // filtragem das atividades em relação a uma condição
     public List<AgendaActivity> filterActivities(Predicate<AgendaActivity> predicate) {
         return this.activities.stream().filter(predicate).toList();
     }

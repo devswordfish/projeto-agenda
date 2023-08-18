@@ -1,8 +1,8 @@
 package agenda.activities;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -17,8 +17,8 @@ public abstract class AgendaActivity implements Serializable {
         this.endDateTime = endDateTime;
     }
 
+    public abstract void showStats();
     public abstract void show();
-    public abstract void showOneLine();
 
     /* formata date/time */
 
