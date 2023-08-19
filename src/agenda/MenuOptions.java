@@ -8,16 +8,33 @@ public class MenuOptions {
     }
 
     public void showOptions() {
+        int count = 0;
         for (int i = 1; i <= this.options.length; i++) {
-            System.out.format("[%d] - %s\n", i, this.options[i - 1].getOption());
+            if (this.options[i - 1].isVisible()) {
+                count++;
+                System.out.format("[%d] - %s\n", count, this.options[i - 1].getOption());
+            }
         }
     }
 
+    public void setOptionVisibility(int index, boolean visibility) {
+        this.options[index].setVisible(visibility);
+    }
+
     public int getTotalOptions() {
-        return this.options.length;
+        int count = 0;
+        for (Option o : this.options) {
+            if (o.isVisible()) count++;
+        }
+        return count;
     }
 
     public void chooseOptionAction(int option) {
-        this.options[option - 1].useAction();
+        int countInvisible = 0;
+        for (int i = 0; i < option; i++) {
+            if (!this.options[i].isVisible()) countInvisible++;
+        }
+
+        this.options[option + countInvisible - 1].useAction();
     }
 }

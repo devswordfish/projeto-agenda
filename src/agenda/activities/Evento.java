@@ -11,7 +11,7 @@ public class Evento extends AgendaActivity {
     }
 
     @Override
-    public void showStats() {
+    public void showAttributes() {
         System.out.println("Evento:");
         System.out.println("    Nome.......: " + this.name);
         System.out.println("    Descrição..: " + this.description);
@@ -24,7 +24,7 @@ public class Evento extends AgendaActivity {
         System.out.format(
             "    Evento - %s (%s -> %s)\n",
             this.name,
-            this.formatStartTime("HH:mm:ss"),
+            this.formatStartDateTime("HH:mm:ss"),
             this.formatEndDateTime("dd/MM/yyyy HH:mm:ss")
         );
         System.out.println("        - Descrição: " + this.description);
