@@ -1,10 +1,13 @@
 package agenda.activities;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class Lembrete extends AgendaActivity {
     public Lembrete(String name, LocalDateTime dateTime) {
-        super(name, dateTime, dateTime);
+        super(name);
+        this.setDateTime(dateTime);
     }
 
     @Override
@@ -21,5 +24,30 @@ public class Lembrete extends AgendaActivity {
             this.name,
             this.formatEndDateTime("HH:mm:ss")
         );
+    }
+
+    public LocalDateTime getDateTime() {
+        return this.startDateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.startDateTime = dateTime;
+        this.endDateTime = dateTime;
+    }
+
+    public LocalDate getDate() {
+        return this.startDateTime.toLocalDate();
+    }
+
+    public void setDate(LocalDate date) {
+        this.setDateTime(LocalDateTime.of(date, this.getTime()));
+    }
+
+    public LocalTime getTime() {
+        return this.startDateTime.toLocalTime();
+    }
+
+    public void setTime(LocalTime time) {
+        this.setDateTime(LocalDateTime.of(this.getDate(), time));
     }
 }

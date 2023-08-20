@@ -3,20 +3,15 @@ package agenda.activities;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-
-import agenda.AgendaChronologicalOrderException;
 
 public abstract class AgendaActivity implements Serializable {
     protected String name;
     protected LocalDateTime startDateTime;
     protected LocalDateTime endDateTime;
 
-    public AgendaActivity(String name, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public AgendaActivity(String name) {
         this.name = name;
-        this.setStartDateTime(startDateTime);
-        this.setEndDateTime(endDateTime);
     }
 
     public abstract void showAttributes();
@@ -68,61 +63,5 @@ public abstract class AgendaActivity implements Serializable {
 
     public void setName(String nome) {
         this.name = nome;
-    }
-
-    public LocalDateTime getStartDateTime() {
-        return this.startDateTime;
-    }
-
-    public void setStartDateTime(LocalDateTime startDateTime) throws AgendaChronologicalOrderException {
-        if (AgendaActivity.checkDateTime(startDateTime, this.endDateTime)) {
-            this.startDateTime = startDateTime;
-        } else {
-            throw new AgendaChronologicalOrderException(startDateTime + " não pode ocorrer antes de " + this.endDateTime);
-        }
-    }
-
-    public LocalDate getStartDate() {
-        return this.startDateTime.toLocalDate();
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.setStartDateTime(LocalDateTime.of(startDate, this.getStartTime()));
-    }
-
-    public LocalTime getStartTime() {
-        return this.startDateTime.toLocalTime();
-    }
-
-    public void setStartTime(LocalTime startTime) {
-        this.setStartDateTime(LocalDateTime.of(this.getStartDate(), startTime));
-    }
-
-    public LocalDateTime getEndDateTime() {
-        return this.endDateTime;
-    }
-
-    public void setEndDateTime(LocalDateTime endDateTime) throws AgendaChronologicalOrderException {
-        if (AgendaActivity.checkDateTime(this.startDateTime, endDateTime)) {
-            this.endDateTime = endDateTime;
-        } else {
-            throw new AgendaChronologicalOrderException(endDateTime + " não pode ocorrer antes de " + this.startDateTime);
-        }
-    }
-
-    public LocalDate getEndDate() {
-        return this.endDateTime.toLocalDate();
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.setEndDateTime(LocalDateTime.of(endDate, this.getEndTime()));
-    }
-
-    public LocalTime getEndTime() {
-        return this.endDateTime.toLocalTime();
-    }
-
-    public void setEndTime(LocalTime endTime) {
-        this.setEndDateTime(LocalDateTime.of(this.getEndDate(), endTime));
     }
 }

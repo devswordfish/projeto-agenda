@@ -1,6 +1,5 @@
 package agenda;
 
-import agenda.activities.AgendaActivity;
 import agenda.activities.Evento;
 import agenda.activities.Lembrete;
 import agenda.activities.Tarefa;
@@ -15,7 +14,6 @@ import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
-import java.util.function.Predicate;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +24,9 @@ public class Agenda {
     private static final String SAVE_FILE = "atividades.ser";
 
     private Map<String, MenuOptions> menus;
-    private List<AgendaActivity> activities;
+    private List<Evento> eventos;
+    private List<Lembrete> lembretes;
+    private List<Tarefa> tarefas;
 
     private MenuOptions currentMenu;
     private boolean continueInAgenda;
@@ -77,8 +77,6 @@ public class Agenda {
             new Option("Ver eventos", () -> this.showEventos()),
             new Option("Ver lembretes", () -> this.showLembretes()),
             new Option("Ver tarefas", () -> this.showTarefas()),
-            new Option("Ver todos", () -> this.showActivities()),
-            new Option("Filtrar por data", () -> this.showActivitiesByDate()),
             new Option("Voltar", () -> this.setCurrentMenu("main"))
         );
 
@@ -281,7 +279,7 @@ public class Agenda {
         // cria o evento
         Evento evento = new Evento(name, description, startDateTime, endDateTime);
 
-        this.addAgendaActivity(evento);
+        this.addEvento(evento);
         this.saveActivities();
 
         System.out.println();
@@ -312,7 +310,7 @@ public class Agenda {
         // cria o lembrete
         Lembrete lembrete = new Lembrete(name, dateTime);
 
-        this.addAgendaActivity(lembrete);
+        this.addLembrete(lembrete);
         this.saveActivities();
 
         System.out.println();
@@ -335,7 +333,7 @@ public class Agenda {
         // cria a tarefa
         Tarefa tarefa = new Tarefa(name, date);
 
-        this.addAgendaActivity(tarefa);
+        this.addTarefa(tarefa);
         this.saveActivities();
 
         System.out.println();
@@ -348,70 +346,21 @@ public class Agenda {
     /* alteração das atividades da agenda */
 
     private void changeEvento() {
-        List<AgendaActivity> filteredActivities = this.filterActivities(activity -> activity.getClass() == Evento.class);
+        this.displayEventos();
 
-        this.enumeratedDisplay(filteredActivities, "Sem eventos");
-        this.changeActivity(filteredActivities, "Evento alterado com sucesso", new int[0]);
-    }
-
-    private void changeLembrete() {
-        List<AgendaActivity> filteredActivities = this.filterActivities(activity -> activity.getClass() == Lembrete.class);
-
-        this.enumeratedDisplay(this.filterActivities(activity -> activity.getClass() == Lembrete.class), "Sem lembretes");
-        this.changeActivity(filteredActivities, "Lembrete alterado com sucesso", new int[] { 1 });
-    }
-
-    private void changeTarefa() {
-        List<AgendaActivity> filteredActivities = this.filterActivities(activity -> activity.getClass() == Tarefa.class);
-
-        this.enumeratedDisplay(this.filterActivities(activity -> activity.getClass() == Tarefa.class), "Sem tarefas");
-        this.changeActivity(filteredActivities, "Tarefa alterado com sucesso", new int[] { 1 });
-    }
-
-    private void changeActivity(List<AgendaActivity> filteredActivities, String successMessage, int[] hide) {
-        int option = this.inputOption(0, activities.size());
+        int option = this.inputOption(0, this.eventos.size());
         
         if (option != 0) {
-            AgendaActivity curActivity = filteredActivities.get(option - 1);
+            Evento curActivity = this.eventos.get(option - 1);
 
-            MenuOptions mChange = this.createAlterationMenuOptions(curActivity);
-            
-            for (int h : hide) {
-                mChange.setOptionVisibility(h, false);
-            }
-
-            curActivity.showAttributes();
-
-            mChange.showOptions();
-
-            int attrOption = this.inputOption(1, mChange.getTotalOptions());
-
-            mChange.chooseOptionAction(attrOption);
-
-            if (attrOption != mChange.getTotalOptions()) {
-                this.activities.remove(curActivity);
-
-                this.addAgendaActivity(curActivity);
-                this.saveActivities();
-
-                System.out.println();
-                System.out.println(successMessage);
-
-                scan.nextLine();
-            }
-        }
-    }
-
-    // menu dinâmico com opções dinâmicas referentes aos atributos das atividades
-    private MenuOptions createAlterationMenuOptions(AgendaActivity activity) {
-        return new MenuOptions(
+            MenuOptions mChange = new MenuOptions(
                 new Option("Mudar nome", () -> {
                     String name = inputString("Digite o novo nome: ");
-                    activity.setName(name);
+                    curActivity.setName(name);
                 }),
                 new Option("Mudar descrição", () -> {
                     String description = inputString("Digite a nova descrição: ");
-                    ((Evento) activity).setDescription(description);
+                    curActivity.setDescription(description);
                 }),
                 new Option("Mudar data de início", () -> {
                     LocalDate startDate = null;
@@ -420,7 +369,7 @@ public class Agenda {
                         startDate = this.inputDate("Digite a nova data de início (formato - dia/mês/ano): ");
 
                         try {
-                            activity.setStartDate(startDate);
+                            curActivity.setStartDate(startDate);
                         } catch (AgendaChronologicalOrderException e) {
                             this.errorMessage("Data de início não pode ser depois da data de término");
                             startDate = null;
@@ -436,14 +385,14 @@ public class Agenda {
                         startTime = this.inputTime("Digite o novo horário de início (formato - horas:minutos:segundos): ");
 
                         try {
-                            activity.setStartTime(startTime);
+                            curActivity.setStartTime(startTime);
                         } catch (AgendaChronologicalOrderException e) {
                             this.errorMessage("Horário de início não pode ser depois do horário de término");
                             startTime = null;
                         }
                     }
 
-                    if (this.hasTimePassed(activity.getStartDate(), startTime)) this.warningMessage("O horário informado já passou");
+                    if (this.hasTimePassed(curActivity.getStartDate(), startTime)) this.warningMessage("O horário informado já passou");
                 }),
                 new Option("Mudar data de término", () -> {
                     LocalDate endDate = null;
@@ -452,7 +401,7 @@ public class Agenda {
                         endDate = this.inputDate("Digite a nova data de término (formato - dia/mês/ano): ");
 
                         try {
-                            activity.setEndDate(endDate);
+                            curActivity.setEndDate(endDate);
                         } catch (AgendaChronologicalOrderException e) {
                             this.errorMessage("Data de término não pode ser antes da data de início");
                             endDate = null;
@@ -468,58 +417,237 @@ public class Agenda {
                         endTime = this.inputTime("Digite o novo horário de término (formato - horas:minutos:segundos): ");
 
                         try {
-                            activity.setEndTime(endTime);
+                            curActivity.setEndTime(endTime);
                         } catch (AgendaChronologicalOrderException e) {
                             this.errorMessage("Horário de término não pode ser antes do horário de início");
                             endTime = null;
                         }
                     }
 
-                    if (this.hasTimePassed(activity.getStartDate(), endTime)) this.warningMessage("O horário informado já passou");
+                    if (this.hasTimePassed(curActivity.getStartDate(), endTime)) this.warningMessage("O horário informado já passou");
                 }),
                 new Option("Voltar", () -> {})
             );
+
+            curActivity.showAttributes();
+
+            mChange.showOptions();
+
+            int attrOption = this.inputOption(1, mChange.getTotalOptions());
+
+            mChange.chooseOptionAction(attrOption);
+
+            if (attrOption != mChange.getTotalOptions()) {
+                this.eventos.remove(curActivity);
+
+                this.addEvento(curActivity);
+                this.saveActivities();
+
+                System.out.println();
+                System.out.println("Evento alterado com sucesso!");
+
+                scan.nextLine();
+            }
+        }
+    }
+
+    private void changeLembrete() {
+        this.displayLembretes();
+
+        int option = this.inputOption(0, this.lembretes.size());
+        
+        if (option != 0) {
+            Lembrete curActivity = this.lembretes.get(option - 1);
+
+            MenuOptions mChange = new MenuOptions(
+                new Option("Mudar nome", () -> {
+                    String name = inputString("Digite o novo nome: ");
+                    curActivity.setName(name);
+                }),
+                new Option("Mudar data", () -> {
+                    LocalDate startDate = null;
+
+                    while (startDate == null) {
+                        startDate = this.inputDate("Digite a nova data (formato - dia/mês/ano): ");
+
+                        curActivity.setDate(startDate);
+                    }
+
+                    if (this.hasDatePassed(startDate)) this.warningMessage("A data informada já passou");
+                }),
+                new Option("Mudar horário", () -> {
+                    LocalTime startTime = null;
+
+                    while (startTime == null) {
+                        startTime = this.inputTime("Digite o novo horário (formato - horas:minutos:segundos): ");
+
+                        curActivity.setTime(startTime);
+                    }
+
+                    if (this.hasTimePassed(curActivity.getDate(), startTime)) this.warningMessage("O horário informado já passou");
+                }),
+                new Option("Voltar", () -> {})
+            );
+
+            curActivity.showAttributes();
+
+            mChange.showOptions();
+
+            int attrOption = this.inputOption(1, mChange.getTotalOptions());
+
+            mChange.chooseOptionAction(attrOption);
+
+            if (attrOption != mChange.getTotalOptions()) {
+                this.lembretes.remove(curActivity);
+
+                this.addLembrete(curActivity);
+                this.saveActivities();
+
+                System.out.println();
+                System.out.println("Lembrete alterado com sucesso!");
+
+                scan.nextLine();
+            }
+        }
+    }
+
+    private void changeTarefa() {
+        this.displayTarefas();
+
+        int option = this.inputOption(0, this.tarefas.size());
+        
+        if (option != 0) {
+            Tarefa curActivity = this.tarefas.get(option - 1);
+
+            MenuOptions mChange = new MenuOptions(
+                new Option("Mudar nome", () -> {
+                    String name = inputString("Digite o novo nome: ");
+                    curActivity.setName(name);
+                }),
+                new Option("Mudar data", () -> {
+                    LocalDate startDate = null;
+
+                    while (startDate == null) {
+                        startDate = this.inputDate("Digite a nova data (formato - dia/mês/ano): ");
+
+                        curActivity.setDate(startDate);
+                    }
+
+                    if (this.hasDatePassed(startDate)) this.warningMessage("A data informada já passou");
+                }),
+                new Option("Voltar", () -> {})
+            );
+
+            curActivity.showAttributes();
+
+            mChange.showOptions();
+
+            int attrOption = this.inputOption(1, mChange.getTotalOptions());
+
+            mChange.chooseOptionAction(attrOption);
+
+            if (attrOption != mChange.getTotalOptions()) {
+                this.tarefas.remove(curActivity);
+
+                this.addTarefa(curActivity);
+                this.saveActivities();
+
+                System.out.println();
+                System.out.println("Tarefa alterado com sucesso!");
+
+                scan.nextLine();
+            }
+        }
     }
 
     /* cancelamento das atividades da agenda */
 
     private void cancelEvento() {
-        this.enumeratedDisplay(this.filterActivities(activity -> activity.getClass() == Evento.class), "Sem eventos");
-        this.cancelActivity("Evento deletado com sucesso!");
-    }
+        this.displayEventos();
 
-    private void cancelLembrete() {
-        this.enumeratedDisplay(this.filterActivities(activity -> activity.getClass() == Lembrete.class), "Sem lembretes");
-        this.cancelActivity("Lembrete deletado com sucesso!");
-    }
+        if (this.eventos.size() != 0) {
+            int option = this.inputOption(0, this.eventos.size());
+            
+            if (option != 0) {
+                this.eventos.remove(this.eventos.get(option - 1));            
+                this.saveActivities();
 
-    private void cancelTarefa() {
-        this.enumeratedDisplay(this.filterActivities(activity -> activity.getClass() == Tarefa.class), "Sem tarefas");
-        this.cancelActivity("Tarefa deletado com sucesso!");
-    }
+                System.out.println();
+                System.out.println("Evento deletado com sucesso!");
 
-    private void cancelActivity(String successMessage) {
-        int option = this.inputOption(0, activities.size());
-        
-        if (option != 0) {
-            this.activities.remove(this.activities.get(option - 1));            
-            this.saveActivities();
-
-            System.out.println();
-            System.out.println(successMessage);
-
-            scan.nextLine();
+                scan.nextLine();
+            }
         }
     }
 
-    private void enumeratedDisplay(List<AgendaActivity> activities, String fallback) {
-        if (activities.size() == 0) {
-            System.out.println(fallback);
+    private void cancelLembrete() {
+        this.displayLembretes();
+
+        if (this.lembretes.size() != 0) {
+            int option = this.inputOption(0, this.lembretes.size());
+            
+            if (option != 0) {
+                this.lembretes.remove(this.lembretes.get(option - 1));            
+                this.saveActivities();
+
+                System.out.println();
+                System.out.println("Lembrete deletado com sucesso!");
+
+                scan.nextLine();
+            }
+        }
+    }
+
+    private void cancelTarefa() {
+        this.displayTarefas();
+
+        if (this.tarefas.size() != 0) {
+            int option = this.inputOption(0, this.tarefas.size());
+            
+            if (option != 0) {
+                this.tarefas.remove(this.tarefas.get(option - 1));            
+                this.saveActivities();
+
+                System.out.println();
+                System.out.println("Tarefa deletado com sucesso!");
+
+                scan.nextLine();
+            }
+        }
+    }
+
+    public void displayEventos() {
+        if (this.eventos.size() == 0) {
+            System.out.println("Sem eventos");
         } else {
             System.out.println("[0] - Voltar");
             
-            for (int i = 0; i < activities.size(); i++) {
-                System.out.format("[%d] - %s\n", i + 1, activities.get(i).getName());
+            for (int i = 0; i < this.eventos.size(); i++) {
+                System.out.format("[%d] - %s\n", i + 1, this.eventos.get(i).getName());
+            }
+        }
+    }
+
+    public void displayLembretes() {
+        if (this.lembretes.size() == 0) {
+            System.out.println("Sem lembretes");
+        } else {
+            System.out.println("[0] - Voltar");
+            
+            for (int i = 0; i < this.lembretes.size(); i++) {
+                System.out.format("[%d] - %s\n", i + 1, this.lembretes.get(i).getName());
+            }
+        }
+    }
+
+    public void displayTarefas() {
+        if (this.tarefas.size() == 0) {
+            System.out.println("Sem tarefas");
+        } else {
+            System.out.println("[0] - Voltar");
+            
+            for (int i = 0; i < this.tarefas.size(); i++) {
+                System.out.format("[%d] - %s\n", i + 1, this.tarefas.get(i).getName());
             }
         }
     }
@@ -527,35 +655,12 @@ public class Agenda {
     /* visualização das atividades da agenda */
 
     private void showEventos() {
-        this.visualizationDisplay(this.filterActivities(activity -> activity.getClass() == Evento.class), "Sem eventos");
-    }
-
-    private void showLembretes() {
-        this.visualizationDisplay(this.filterActivities(activity -> activity.getClass() == Lembrete.class), "Sem lembretes");
-    }
-
-    private void showTarefas() {
-        this.visualizationDisplay(this.filterActivities(activity -> activity.getClass() == Tarefa.class), "Sem tarefas");
-    }
-
-    private void showActivities() {
-        this.visualizationDisplay(this.activities, "Sem eventos/lembretes/atividades");
-    }
-
-    private void showActivitiesByDate() {
-        LocalDate date = this.inputDate("Digite a data (formato - dia/mês/ano): ");
-
-        this.visualizationDisplay(this.filterActivities(activity -> activity.getStartDate().isEqual(date)), "Sem eventos/lembretes/atividades nesse dia");
-    }
-
-    // interface genérica para visualização
-    private void visualizationDisplay(List<AgendaActivity> activities, String fallback) {
-        if (activities.size() == 0) {
-            System.out.println(fallback);
+        if (this.eventos.size() == 0) {
+            System.out.println("Sem eventos");
         } else {
             LocalDate curDateTime = null;
             
-            for (AgendaActivity activity : activities) {
+            for (Evento activity : this.eventos) {
                 LocalDate activityDate = activity.getStartDate();
                 
                 if (!activityDate.equals((curDateTime))) {
@@ -573,9 +678,52 @@ public class Agenda {
         scan.nextLine();
     }
 
-    // filtragem das atividades em relação a uma condição
-    private List<AgendaActivity> filterActivities(Predicate<AgendaActivity> predicate) {
-        return this.activities.stream().filter(predicate).toList();
+    private void showLembretes() {
+        if (this.lembretes.size() == 0) {
+            System.out.println("Sem lembretes");
+        } else {
+            LocalDate curDateTime = null;
+            
+            for (Lembrete activity : this.lembretes) {
+                LocalDate activityDate = activity.getDate();
+                
+                if (!activityDate.equals((curDateTime))) {
+                    if (curDateTime != null) System.out.println();
+                    
+                    curDateTime = activityDate;
+                    
+                    System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+                
+                activity.show();
+            }
+        }
+
+        scan.nextLine();
+    }
+
+    private void showTarefas() {
+        if (this.tarefas.size() == 0) {
+            System.out.println("Sem tarefas");
+        } else {
+            LocalDate curDateTime = null;
+            
+            for (Tarefa activity : this.tarefas) {
+                LocalDate activityDate = activity.getDate();
+                
+                if (!activityDate.equals((curDateTime))) {
+                    if (curDateTime != null) System.out.println();
+                    
+                    curDateTime = activityDate;
+                    
+                    System.out.println("--- " + curDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+                
+                activity.show();
+            }
+        }
+
+        scan.nextLine();
     }
 
     private boolean hasDatePassed(LocalDate date) {
@@ -591,43 +739,108 @@ public class Agenda {
     }
 
     // insere a atividade ordenada por data
-    private void addAgendaActivity(AgendaActivity activity) {
-        LocalDateTime activityDateTime = activity.getStartDateTime();
+    private void addEvento(Evento evento) {
+        LocalDate activityDate = evento.getStartDate();
         
         // binary search para achar a posição na qual a atividade deve ser inserida (a atividade é sempre inserida por último nas atividades referentes ao mesmo dia)
         int l = 0;
-        int r = this.activities.size() - 1;
+        int r = this.eventos.size() - 1;
 
         while (l <= r) {
             int m = (l + r) / 2;
 
-            LocalDateTime middleActivityDatetime = this.activities.get(m).getStartDateTime();
+            LocalDate middleActivityDate = this.eventos.get(m).getStartDate();
 
-            if (activityDateTime.isBefore(middleActivityDatetime)) r = m - 1;
+            if (activityDate.isBefore(middleActivityDate)) r = m - 1;
             else                                                   l = m + 1;
         }
 
-        this.activities.add(l, activity);
+        this.eventos.add(l, evento);
+    }
+
+    private void addLembrete(Lembrete lembrete) {
+        LocalDate activityDate = lembrete.getDate();
+        
+        // binary search para achar a posição na qual a atividade deve ser inserida (a atividade é sempre inserida por último nas atividades referentes ao mesmo dia)
+        int l = 0;
+        int r = this.lembretes.size() - 1;
+
+        while (l <= r) {
+            int m = (l + r) / 2;
+
+            LocalDate middleActivityDate = this.lembretes.get(m).getDate();
+
+            if (activityDate.isBefore(middleActivityDate)) r = m - 1;
+            else                                                   l = m + 1;
+        }
+
+        this.lembretes.add(l, lembrete);
+    }
+
+    private void addTarefa(Tarefa tarefa) {
+        LocalDate activityDate = tarefa.getDate();
+        
+        // binary search para achar a posição na qual a atividade deve ser inserida (a atividade é sempre inserida por último nas atividades referentes ao mesmo dia)
+        int l = 0;
+        int r = this.tarefas.size() - 1;
+
+        while (l <= r) {
+            int m = (l + r) / 2;
+
+            LocalDate middleActivityDate = this.tarefas.get(m).getDate();
+
+            if (activityDate.isBefore(middleActivityDate)) r = m - 1;
+            else                                                   l = m + 1;
+        }
+
+        this.tarefas.add(l, tarefa);
     }
 
     @SuppressWarnings("unchecked")
     private void loadActivities() {
         try {
-            FileInputStream fi = new FileInputStream(Agenda.SAVE_FILE);
-            ObjectInputStream is = new ObjectInputStream(fi);
-            this.activities = (ArrayList<AgendaActivity>) is.readObject();
-            is.close();
+            FileInputStream fi1 = new FileInputStream("eventos");
+            ObjectInputStream is1 = new ObjectInputStream(fi1);
+
+            this.eventos = (List<Evento>) is1.readObject();
+
+            FileInputStream fi2 = new FileInputStream("lembretes");
+            ObjectInputStream is2 = new ObjectInputStream(fi2);
+
+            this.lembretes = (List<Lembrete>) is2.readObject();
+
+            FileInputStream fi3 = new FileInputStream("eventos");
+            ObjectInputStream is3 = new ObjectInputStream(fi3);
+
+            this.tarefas = (List<Tarefa>) is3.readObject();
+
+            is1.close();
+            is2.close();
+            is3.close();
         } catch (Exception e) {
-            this.activities = new ArrayList<>();
+            this.eventos = new ArrayList<>();
+            this.lembretes = new ArrayList<>();
+            this.tarefas = new ArrayList<>();
         }
     }
 
     private void saveActivities() {
         try {
-            FileOutputStream fo = new FileOutputStream(Agenda.SAVE_FILE);
-            ObjectOutputStream os = new ObjectOutputStream(fo);
-            os.writeObject(this.activities);
-            os.close();
+            FileOutputStream fo1 = new FileOutputStream("eventos");
+            ObjectOutputStream os1 = new ObjectOutputStream(fo1);
+            os1.writeObject(this.eventos);
+
+            FileOutputStream fo2 = new FileOutputStream("lembretes");
+            ObjectOutputStream os2 = new ObjectOutputStream(fo2);
+            os2.writeObject(this.lembretes);
+
+            FileOutputStream fo3 = new FileOutputStream("tarefas");
+            ObjectOutputStream os3 = new ObjectOutputStream(fo3);
+            os3.writeObject(this.tarefas);
+
+            os1.close();
+            os2.close();
+            os3.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
