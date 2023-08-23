@@ -1,11 +1,11 @@
-package agenda.activities;
+package agendapages.activities;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.LocalDate;
 
-public class Tarefa extends AgendaActivity {
-    public Tarefa(String name, LocalDate date) {
+public class Task extends AgendaActivity {
+    public Task(String name, LocalDate date) {
         super(name);
         this.setDate(date);
     }

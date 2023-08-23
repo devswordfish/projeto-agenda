@@ -1,15 +1,15 @@
-package agenda.activities;
+package agendapages.activities;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import agenda.AgendaChronologicalOrderException;
+import agendapages.datetime.AgendaChronologicalOrderException;
 
-public class Evento extends AgendaActivity {
+public class Event extends AgendaActivity {
     private String description;
 
-    public Evento(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public Event(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         super(name);
         this.setStartDateTime(startDateTime);
         this.setEndDateTime(endDateTime);

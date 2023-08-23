@@ -1,4 +1,4 @@
-import agenda.Agenda;
+import agendapages.Agenda;
 
 public class Main {
     public static void main(String[] args) {

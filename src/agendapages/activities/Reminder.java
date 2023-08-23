@@ -1,11 +1,11 @@
-package agenda.activities;
+package agendapages.activities;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class Lembrete extends AgendaActivity {
-    public Lembrete(String name, LocalDateTime dateTime) {
+public class Reminder extends AgendaActivity {
+    public Reminder(String name, LocalDateTime dateTime) {
         super(name);
         this.setDateTime(dateTime);
     }

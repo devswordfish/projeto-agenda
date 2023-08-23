@@ -1,11 +1,22 @@
-package agenda;
+package agendapages.datetime;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class AgendaDateTimeParser {
+public abstract class AgendaDateTime {
+    // checa se o dia já passou
+    public static boolean hasDatePassedFromNow(LocalDate date) {
+        return date.isBefore(LocalDate.now());
+    }
+
+    // checa se o tempo passou no mesmo dia
+    public static boolean hasTimePassedFromNow(LocalDate date, LocalTime time) {
+        return date.isEqual(LocalDate.now()) && time.isBefore(LocalTime.now());
+    }
+
     public static LocalDate parseDate(String dateString) throws AgendaDateTimeFormatException {
         // possibilita que a data seja informada, omitindo-se um dos seus componentes
         LocalDate now = LocalDate.now();
@@ -33,7 +44,7 @@ public class AgendaDateTimeParser {
         }
 
         if (!ok) {
-            throw new AgendaDateTimeFormatException("Could not parse the string \"" + dateString + "\"");
+            throw new AgendaDateTimeFormatException("Não foi possível converter a string \"" + dateString + "\"");
         }
 
         return date;
@@ -64,7 +75,7 @@ public class AgendaDateTimeParser {
         }
 
         if (!ok) {
-            throw new AgendaDateTimeFormatException("Could not parse the string \"" + timeString + "\"");
+            throw new AgendaDateTimeFormatException("Não foi possível converter a string \"" + timeString + "\"");
         }
 
         return time;
