@@ -7,10 +7,8 @@ import java.io.ObjectOutputStream;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public abstract class Page<T> {
-    protected static Scanner scan = new Scanner(System.in);
     protected List<T> elements;
     private String file;
 
@@ -19,9 +17,9 @@ public abstract class Page<T> {
         this.load();
     }
 
-    /* métodos auxiliares */
+    /* métodos para salvar e carregar */
 
-    protected void save() {
+    public void save() {
         try (FileOutputStream outputFile = new FileOutputStream(this.file)) {
             ObjectOutputStream outputStream = new ObjectOutputStream(outputFile);
             outputStream.writeObject(elements);
@@ -31,7 +29,7 @@ public abstract class Page<T> {
     }
 
     @SuppressWarnings("unchecked")
-    protected void load() {
+    public void load() {
         try (FileInputStream inputFile = new FileInputStream(this.file)) {
             ObjectInputStream inputStream = new ObjectInputStream(inputFile);
             this.elements = (ArrayList<T>) inputStream.readObject();
@@ -40,7 +38,7 @@ public abstract class Page<T> {
         }
     }
 
-    /* métodos principais */
+    /* métodos para implementar */
 
     public abstract void create();
     public abstract void cancel();

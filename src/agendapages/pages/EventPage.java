@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import agendapages.activities.Event;
-
 import agendapages.datetime.AgendaChronologicalOrderException;
 import agendapages.datetime.AgendaDateTime;
 
@@ -15,9 +15,9 @@ import agendapages.io.AgendaOutput;
 
 import agendapages.menu.Menu;
 import agendapages.menu.Option;
-import agendapages.menu.OptionAction;
+import agendapages.menu.Action;
 
-public class EventPage extends Page<Event> {
+public class EventPage extends ActivityPage<Event> {
     private static final Menu<Event> menuChange = new Menu<>(0);
 
     public EventPage() {
@@ -162,7 +162,7 @@ public class EventPage extends Page<Event> {
 
     @Override
     public void cancel() {
-        Menu<Event> menu = this.enumerate(event -> {
+        Menu<Event> menu = this.enumeratedElements(event -> {
             this.elements.remove(event);
             this.save();
 
@@ -176,7 +176,7 @@ public class EventPage extends Page<Event> {
             
             int option = AgendaInput.inputOption(0, this.elements.size());
             
-            menu.chooseOptionAction(option, option == 0 ? null : this.elements.get(option - 1));
+            menu.choose(option, option == 0 ? null : this.elements.get(option - 1));
         } else {
             AgendaOutput.okMessage("Sem eventos!");
             AgendaInput.holdScreen();
@@ -186,7 +186,7 @@ public class EventPage extends Page<Event> {
     @Override
     public void change() {
         // menu de escolha do evento
-        Menu<Event> menuChoose = this.enumerate(event -> {
+        Menu<Event> menuChoose = this.enumeratedElements(event -> {
             AgendaOutput.section();
 
             event.showAttributes();
@@ -201,7 +201,7 @@ public class EventPage extends Page<Event> {
 
             AgendaOutput.section();
 
-            menuChange.chooseOptionAction(option, event);
+            menuChange.choose(option, event);
 
             this.elements.remove(event);
             this.add(event);
@@ -217,7 +217,7 @@ public class EventPage extends Page<Event> {
 
             int option = AgendaInput.inputOption(0, menuChoose.getTotalOptions());
 
-            menuChoose.chooseOptionAction(option, option == 0 ? null : this.elements.get(option - 1));
+            menuChoose.choose(option, option == 0 ? null : this.elements.get(option - 1));
         } else {
             AgendaOutput.okMessage("Sem eventos!");
             AgendaInput.holdScreen();
@@ -250,25 +250,9 @@ public class EventPage extends Page<Event> {
         AgendaInput.holdScreen();
     }
 
-    // cria um menu dinâmico
-    private <T> Menu<T> enumerate(OptionAction<T> optionAction) {
-        Menu<T> menu = null;
-    
-        if (this.elements.size() != 0) {
-            menu = new Menu<T>(0);
-            menu.addOption(new Option<T>("Voltar", __ -> {}));
-
-            for (int i = 0; i < this.elements.size(); i++) {
-                menu.addOption(
-                    new Option<T>(
-                        this.elements.get(i).getName(),
-                        optionAction
-                    )
-                );
-            }
-        }
-
-        return menu;
+    @Override
+    public List<Event> getByDate(LocalDate date) {
+        return this.elements.stream().filter(task -> task.getStartDate() == date).toList();
     }
 
     // cria o menu de alterações

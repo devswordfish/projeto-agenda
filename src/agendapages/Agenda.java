@@ -1,7 +1,12 @@
 package agendapages;
 
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
+import java.util.ArrayList;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import agendapages.activities.AgendaActivity;
 
@@ -14,7 +19,6 @@ import agendapages.io.AgendaInput;
 import agendapages.io.AgendaOutput;
 
 import agendapages.menu.Menu;
-import agendapages.menu.Option;
 
 public class Agenda {
     // páginas da agenda
@@ -39,42 +43,47 @@ public class Agenda {
     }
 
     /* métodos de configurações */
+
     private void setUpMenus() {
         // menu principal
         Menu<Void> mMain = new Menu<>(0);
-        mMain.addOption(new Option<>("Sair", __ -> this.finish()));
-        mMain.addOption(new Option<>("Criar", __ -> this.setCurrentMenu(MENU.CREATION)));
-        mMain.addOption(new Option<>("Alterar", __ -> this.setCurrentMenu(MENU.CHANGE)));
-        mMain.addOption(new Option<>("Cancelar", __ -> this.setCurrentMenu(MENU.CANCEL)));
-        mMain.addOption(new Option<>("Visualizar", __ -> this.setCurrentMenu(MENU.VIEW)));
+        mMain.createOption("Sair", __ -> this.finish());
+        mMain.createOption("Criar", __ -> this.setCurrentMenu(MENU.CREATION));
+        mMain.createOption("Alterar", __ -> this.setCurrentMenu(MENU.CHANGE));
+        mMain.createOption("Cancelar", __ -> this.setCurrentMenu(MENU.CANCEL));
+        mMain.createOption("Visualizar", __ -> this.setCurrentMenu(MENU.VIEW));
+        mMain.createOption("Hoje", __ -> this.viewAllByDate(LocalDate.now()));
 
         // menu de criação
         Menu<Void> mCreate = new Menu<>(0);
-        mCreate.addOption(new Option<>("Voltar", __ -> this.setCurrentMenu(MENU.MAIN)));
-        mCreate.addOption(new Option<>("Criar evento", __ -> this.getEventoPage().create()));
-        mCreate.addOption(new Option<>("Criar lembrete", __ -> this.getLembretePage().create()));
-        mCreate.addOption(new Option<>("Criar tarefa", __ -> this.getTarefaPage().create()));
+        mCreate.createOption("Voltar", __ -> this.setCurrentMenu(MENU.MAIN));
+        mCreate.createOption("Criar evento", __ -> this.getEventPage().create());
+        mCreate.createOption("Criar lembrete", __ -> this.getReminderPage().create());
+        mCreate.createOption("Criar tarefa", __ -> this.getTaskPage().create());
 
         // menu de alteração
         Menu<Void> mChange = new Menu<>(0);
-        mChange.addOption(new Option<>("Voltar", __ -> this.setCurrentMenu(MENU.MAIN)));
-        mChange.addOption(new Option<>("Alterar evento", __ -> this.getEventoPage().change()));
-        mChange.addOption(new Option<>("Alterar lembrete", __ -> this.getLembretePage().change()));
-        mChange.addOption(new Option<>("Alterar tarefa", __ -> this.getTarefaPage().change()));
+        mChange.createOption("Voltar", __ -> this.setCurrentMenu(MENU.MAIN));
+        mChange.createOption("Alterar evento", __ -> this.getEventPage().change());
+        mChange.createOption("Alterar lembrete", __ -> this.getReminderPage().change());
+        mChange.createOption("Alterar tarefa", __ -> this.getTaskPage().change());
 
         // menu de cancelamento
         Menu<Void> mCancelation = new Menu<>(0);
-        mCancelation.addOption(new Option<>("Voltar", __ -> this.setCurrentMenu(MENU.MAIN)));
-        mCancelation.addOption(new Option<>("Cancelar evento", __ -> this.getEventoPage().cancel()));
-        mCancelation.addOption(new Option<>("Cancelar lembrete", __ -> this.getLembretePage().cancel()));
-        mCancelation.addOption(new Option<>("Cancelar tarefa", __ -> this.getTarefaPage().cancel()));
+        mCancelation.createOption("Voltar", __ -> this.setCurrentMenu(MENU.MAIN));
+        mCancelation.createOption("Cancelar evento", __ -> this.getEventPage().cancel());
+        mCancelation.createOption("Cancelar lembrete", __ -> this.getReminderPage().cancel());
+        mCancelation.createOption("Cancelar tarefa", __ -> this.getTaskPage().cancel());
 
         // menu de visualização
         Menu<Void> mVisualization = new Menu<>(0);
-        mVisualization.addOption(new Option<>("Voltar", __ -> this.setCurrentMenu(MENU.MAIN)));
-        mVisualization.addOption(new Option<>("Ver eventos", __ -> this.getEventoPage().view()));
-        mVisualization.addOption(new Option<>("Ver lembretes", __ -> this.getLembretePage().view()));
-        mVisualization.addOption(new Option<>("Ver tarefas", __ -> this.getTarefaPage().view()));
+        mVisualization.createOption("Voltar", __ -> this.setCurrentMenu(MENU.MAIN));
+        mVisualization.createOption("Ver eventos", __ -> this.getEventPage().view());
+        mVisualization.createOption("Ver lembretes", __ -> this.getReminderPage().view());
+        mVisualization.createOption("Ver tarefas", __ -> this.getTaskPage().view());
+        mVisualization.createOption("Marcar tarefa como feita", __ -> this.getTaskPage().markTaskDone());
+        mVisualization.createOption("Marcar tarefa como não feita", __ -> this.getTaskPage().markTaskNotDone());
+        mVisualization.createOption("Filtrar por data", __ -> this.filterByDate());
 
         this.menus = new HashMap<>();
 
@@ -110,7 +119,7 @@ public class Agenda {
 
             AgendaOutput.section();
 
-            this.currentMenu.chooseOptionAction(option, null);
+            this.currentMenu.choose(option, null);
         }
 
         AgendaOutput.clear();
@@ -131,18 +140,40 @@ public class Agenda {
         System.out.println("   |     | +-----+ +----- |    \\| +--°   |     |");
     }
 
+    private void filterByDate() {
+        LocalDate date = AgendaInput.inputDate("Digite a data para filtrar");
+
+        this.viewAllByDate(date);
+    }
+
+    private void viewAllByDate(LocalDate date) {
+        List<AgendaActivity> activities = new ArrayList<>();
+        activities.addAll(this.getEventPage().getByDate(date));
+        activities.addAll(this.getReminderPage().getByDate(date));
+        activities.addAll(this.getTaskPage().getByDate(date));
+
+        if (activities.size() == 0) {
+            AgendaOutput.okMessage("Sem eventos/lembretes/tarefas!");
+        } else {
+            System.out.println("--- " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            activities.forEach(activity -> activity.show());
+        }
+
+        AgendaInput.holdScreen();
+    }
+
     /* getters e setters */
 
-    private Page<? extends AgendaActivity> getTarefaPage() {
-        return this.pages.get(PAGE.TASK);
+    private TaskPage getTaskPage() {
+        return (TaskPage) this.pages.get(PAGE.TASK);
     }
 
-    private Page<? extends AgendaActivity> getLembretePage() {
-        return this.pages.get(PAGE.REMINDER);
+    private ReminderPage getReminderPage() {
+        return (ReminderPage) this.pages.get(PAGE.REMINDER);
     }
 
-    private Page<? extends AgendaActivity> getEventoPage() {
-        return this.pages.get(PAGE.EVENT);
+    private EventPage getEventPage() {
+        return (EventPage) this.pages.get(PAGE.EVENT);
     }
 
     private void setCurrentMenu(MENU menuName) {

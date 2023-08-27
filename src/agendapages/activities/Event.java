@@ -36,6 +36,19 @@ public class Event extends AgendaActivity {
         System.out.println("        - Descrição: " + this.description);
     }
 
+    public boolean checkDateTime() {
+        return (
+            this.startDateTime == null || this.endDateTime == null || // não existe um intervalo de início e fim
+            this.startDateTime.toLocalDate().isBefore(this.endDateTime.toLocalDate()) || // data de início < data de término
+            ( // horário de início <= horário de término do mesmo dia
+                this.startDateTime.toLocalDate().isEqual(this.endDateTime.toLocalDate()) &&
+                !this.startDateTime.toLocalTime().isAfter(this.endDateTime.toLocalTime())
+            )
+        );
+    }
+
+    /* getters e setters */
+
     public String getDescription() {
         return this.description;
     }
@@ -49,10 +62,10 @@ public class Event extends AgendaActivity {
     }
 
     public void setStartDateTime(LocalDateTime startDateTime) throws AgendaChronologicalOrderException {
-        if (AgendaActivity.checkDateTime(startDateTime, this.endDateTime)) {
+        if (this.checkDateTime()) {
             this.startDateTime = startDateTime;
         } else {
-            throw new AgendaChronologicalOrderException(startDateTime + " não pode ocorrer antes de " + this.endDateTime);
+            throw new AgendaChronologicalOrderException(startDateTime + " não pode ocorrer depois de " + this.endDateTime);
         }
     }
 
@@ -77,7 +90,7 @@ public class Event extends AgendaActivity {
     }
 
     public void setEndDateTime(LocalDateTime endDateTime) throws AgendaChronologicalOrderException {
-        if (AgendaActivity.checkDateTime(this.startDateTime, endDateTime)) {
+        if (this.checkDateTime()) {
             this.endDateTime = endDateTime;
         } else {
             throw new AgendaChronologicalOrderException(endDateTime + " não pode ocorrer antes de " + this.startDateTime);

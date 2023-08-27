@@ -2,9 +2,9 @@ package agendapages.menu;
 
 public class Option<T> {
     private String option;
-    private OptionAction<T> action;
+    private Action<T> action;
 
-    public Option(String option, OptionAction<T> action) {
+    public Option(String option, Action<T> action) {
         this.option = option;
         this.action = action;
     }

@@ -2,6 +2,7 @@ package agendapages.pages;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import agendapages.activities.Task;
 
@@ -12,9 +13,9 @@ import agendapages.io.AgendaOutput;
 
 import agendapages.menu.Menu;
 import agendapages.menu.Option;
-import agendapages.menu.OptionAction;
+import agendapages.menu.Action;
 
-public class TaskPage extends Page<Task> {
+public class TaskPage extends ActivityPage<Task> {
     private static final Menu<Task> menuChange = new Menu<>(0);
     
     public TaskPage() {
@@ -66,7 +67,7 @@ public class TaskPage extends Page<Task> {
 
     @Override
     public void cancel() {
-        Menu<Task> menu = this.enumerate(task -> {
+        Menu<Task> menu = this.enumeratedElements(task -> {
             this.elements.remove(task);
             this.save();
 
@@ -80,7 +81,7 @@ public class TaskPage extends Page<Task> {
             
             int option = AgendaInput.inputOption(0, this.elements.size());
             
-            menu.chooseOptionAction(option, option == 0 ? null : this.elements.get(option - 1));
+            menu.choose(option, option == 0 ? null : this.elements.get(option - 1));
         } else {
             AgendaOutput.okMessage("Sem tarefas!");
             AgendaInput.holdScreen();
@@ -90,7 +91,7 @@ public class TaskPage extends Page<Task> {
     @Override
     public void change() {
         // menu de escolha da tarefa
-        Menu<Task> menuChoose = this.enumerate(task -> {
+        Menu<Task> menuChoose = this.enumeratedElements(task -> {
             AgendaOutput.section();
 
             task.showAttributes();
@@ -105,7 +106,7 @@ public class TaskPage extends Page<Task> {
 
             AgendaOutput.section();
 
-            menuChange.chooseOptionAction(option, task);
+            menuChange.choose(option, task);
 
             this.elements.remove(task);
             this.add(task);
@@ -121,12 +122,11 @@ public class TaskPage extends Page<Task> {
 
             int option = AgendaInput.inputOption(0, menuChoose.getTotalOptions());
 
-            menuChoose.chooseOptionAction(option, option == 0 ? null : this.elements.get(option - 1));
+            menuChoose.choose(option, option == 0 ? null : this.elements.get(option - 1));
         } else {
             AgendaOutput.okMessage("Sem tarefas!");
             AgendaInput.holdScreen();
         }
-
     }
 
     @Override
@@ -154,25 +154,68 @@ public class TaskPage extends Page<Task> {
         AgendaInput.holdScreen();
     }
 
-    // cria um menu dinâmico
-    private <T> Menu<T> enumerate(OptionAction<T> optionAction) {
-        Menu<T> menu = null;
-    
-        if (this.elements.size() != 0) {
-            menu = new Menu<T>(0);
-            menu.addOption(new Option<T>("Voltar", __ -> {}));
+    public void markTaskDone() {
+        List<Task> filteredList = this.filter(task -> !task.isCompleted());
+        
+        if (filteredList.size() != 0) {
+            Menu<Task> menu = null;
+            int option = -1;
 
-            for (int i = 0; i < this.elements.size(); i++) {
-                menu.addOption(
-                    new Option<T>(
-                        this.elements.get(i).getName(),
-                        optionAction
-                    )
+            while (filteredList.size() != 0 && option != 0) {
+                menu = this.enumeratedElements(
+                    filteredList,
+                    task -> {
+                        task.complete();
+                        this.save();
+                    }
                 );
-            }
-        }
 
-        return menu;
+                menu.show();
+
+                option = AgendaInput.inputOption(0, menu.getTotalOptions());
+
+                menu.choose(option, option == 0 ? null : filteredList.get(option - 1));
+
+                filteredList = this.filter(task -> !task.isCompleted());
+            }
+        } else {
+            AgendaOutput.okMessage("Sem tarefas!");
+        }
+    }
+
+    public void markTaskNotDone() {
+        List<Task> filteredList = this.filter(task -> task.isCompleted());
+        
+        if (filteredList.size() != 0) {
+            Menu<Task> menu = null;
+            int option = -1;
+
+            while (filteredList.size() != 0 && option != 0) {
+
+                menu = this.enumeratedElements(
+                    filteredList,
+                    task -> {
+                        task.uncomplete();
+                        this.save();
+                    }
+                );
+
+                menu.show();
+
+                option = AgendaInput.inputOption(0, menu.getTotalOptions());
+
+                menu.choose(option, option == 0 ? null : filteredList.get(option - 1));
+
+                filteredList = this.filter(task -> task.isCompleted());
+            }
+        } else {
+            AgendaOutput.okMessage("Sem tarefas!");
+        }
+    }
+
+    @Override
+    public List<Task> getByDate(LocalDate date) {
+        return this.filter(task -> task.getDate() == date);
     }
 
     // cria o menu de alterações

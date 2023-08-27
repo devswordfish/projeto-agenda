@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import agendapages.activities.Reminder;
-
 import agendapages.datetime.AgendaDateTime;
 
 import agendapages.io.AgendaInput;
@@ -14,9 +14,9 @@ import agendapages.io.AgendaOutput;
 
 import agendapages.menu.Menu;
 import agendapages.menu.Option;
-import agendapages.menu.OptionAction;
+import agendapages.menu.Action;
 
-public class ReminderPage extends Page<Reminder> {
+public class ReminderPage extends ActivityPage<Reminder> {
     private static final Menu<Reminder> menuChange = new Menu<>(0);
     
     public ReminderPage() {
@@ -76,7 +76,7 @@ public class ReminderPage extends Page<Reminder> {
 
     @Override
     public void cancel() {
-        Menu<Reminder> menu = this.enumerate(reminder -> {
+        Menu<Reminder> menu = this.enumeratedElements(reminder -> {
             this.elements.remove(reminder);
             this.save();
 
@@ -90,7 +90,7 @@ public class ReminderPage extends Page<Reminder> {
             
             int option = AgendaInput.inputOption(0, this.elements.size());
             
-            menu.chooseOptionAction(option, option == 0 ? null : this.elements.get(option - 1));
+            menu.choose(option, option == 0 ? null : this.elements.get(option - 1));
         } else {
             AgendaOutput.okMessage("Sem lembretes!");
             AgendaInput.holdScreen();
@@ -100,7 +100,7 @@ public class ReminderPage extends Page<Reminder> {
     @Override
     public void change() {
         // menu de escolha do lembrete
-        Menu<Reminder> menuChoose = this.enumerate(reminder -> {
+        Menu<Reminder> menuChoose = this.enumeratedElements(reminder -> {
             AgendaOutput.section();
 
             reminder.showAttributes();
@@ -115,7 +115,7 @@ public class ReminderPage extends Page<Reminder> {
 
             AgendaOutput.section();
 
-            menuChange.chooseOptionAction(option, reminder);
+            menuChange.choose(option, reminder);
 
             this.elements.remove(reminder);
             this.add(reminder);
@@ -131,7 +131,7 @@ public class ReminderPage extends Page<Reminder> {
 
             int option = AgendaInput.inputOption(0, menuChoose.getTotalOptions());
 
-            menuChoose.chooseOptionAction(option, option == 0 ? null : this.elements.get(option - 1));
+            menuChoose.choose(option, option == 0 ? null : this.elements.get(option - 1));
         } else {
             AgendaOutput.okMessage("Sem tarefas!");
             AgendaInput.holdScreen();
@@ -164,25 +164,9 @@ public class ReminderPage extends Page<Reminder> {
         AgendaInput.holdScreen();
     }
 
-    // cria um menu dinâmico
-    private <T> Menu<T> enumerate(OptionAction<T> optionAction) {
-        Menu<T> menu = null;
-    
-        if (this.elements.size() != 0) {
-            menu = new Menu<T>(0);
-            menu.addOption(new Option<T>("Voltar", __ -> {}));
-
-            for (int i = 0; i < this.elements.size(); i++) {
-                menu.addOption(
-                    new Option<T>(
-                        this.elements.get(i).getName(),
-                        optionAction
-                    )
-                );
-            }
-        }
-
-        return menu;
+    @Override
+    public List<Reminder> getByDate(LocalDate date) {
+        return this.elements.stream().filter(task -> task.getDate() == date).toList();
     }
 
     // cria o menu de alterações

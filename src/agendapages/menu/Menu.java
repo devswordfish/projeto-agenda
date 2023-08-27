@@ -12,14 +12,17 @@ public class Menu<T> {
         this.startEnumeration = startEnumeration;
     }
 
+    public void createOption(String option, Action<T> action) {
+        this.addOption(new Option<>(option, action));
+    }
+
     public void addOption(Option<T> option) {
         this.options.add(option);
     }
 
     public void show() {
-        int n = this.startEnumeration;
         for (int i = 0; i < this.options.size(); i++) {
-            System.out.format("[%d] - %s\n", n++, this.options.get(i).getOption());  
+            System.out.format("[%d] - %s\n", this.startEnumeration + i, this.options.get(i).getOption());  
         }
     }
 
@@ -27,7 +30,7 @@ public class Menu<T> {
         return this.options.size();
     }
 
-    public void chooseOptionAction(int option, T element) {
+    public void choose(int option, T element) {
         this.options.get(option - this.startEnumeration).useAction(element);
     }
 }

@@ -5,9 +5,20 @@ import java.time.LocalTime;
 import java.time.LocalDate;
 
 public class Task extends AgendaActivity {
+    private boolean completed;
+
     public Task(String name, LocalDate date) {
         super(name);
         this.setDate(date);
+        this.completed = false;
+    }
+
+    public void complete() {
+        this.completed = true;
+    }
+
+    public void uncomplete() {
+        this.completed = false;
     }
 
     @Override
@@ -19,7 +30,7 @@ public class Task extends AgendaActivity {
 
     @Override
     public void show() {
-        System.out.println("    Tarefa - " + this.name);
+        System.out.format("    Tarefa - %s [%s]\n", this.name, this.completed ? "x" : " ");
     }
 
     public LocalDate getDate() {
@@ -29,5 +40,9 @@ public class Task extends AgendaActivity {
     public void setDate(LocalDate date) {
         this.startDateTime = LocalDateTime.of(date, LocalTime.of(0, 0, 0, 0)); // começo do dia
         this.endDateTime = LocalDateTime.of(date, LocalTime.of(23, 59, 59, 999_999_999)); // fim do dia
+    }
+
+    public boolean isCompleted() {
+        return completed;
     }
 }
