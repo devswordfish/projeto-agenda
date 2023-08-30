@@ -1,4 +1,4 @@
-package agendapages.io;
+package agenda.io;
 
 public abstract class AgendaOutput {
     private static final int MAX_CHAR = 51;
@@ -14,6 +14,7 @@ public abstract class AgendaOutput {
         System.out.println("=".repeat(MAX_CHAR));
     }
 
+    // divisória nomeada
     public static void section(String name) {
         int total = MAX_CHAR - name.length() - 2;
         int left = total / 2;

@@ -1,24 +1,22 @@
-package agendapages;
+package agenda;
 
 import java.util.Map;
+
+import agenda.activities.AgendaActivity;
+import agenda.io.AgendaInput;
+import agenda.io.AgendaOutput;
+import agenda.menu.Menu;
+import agenda.pages.EventPage;
+import agenda.pages.Page;
+import agenda.pages.ReminderPage;
+import agenda.pages.TaskPage;
+
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-
-import agendapages.activities.AgendaActivity;
-
-import agendapages.pages.Page;
-import agendapages.pages.TaskPage;
-import agendapages.pages.ReminderPage;
-import agendapages.pages.EventPage;
-
-import agendapages.io.AgendaInput;
-import agendapages.io.AgendaOutput;
-
-import agendapages.menu.Menu;
 
 public class Agenda {
     // páginas da agenda
@@ -31,7 +29,7 @@ public class Agenda {
     private Map<PAGE, Page<? extends AgendaActivity>> pages;
 
     private Menu<Void> currentMenu;
-    private MENU menu;
+    private String menuName;
     private boolean continueInAgenda;
 
     public Agenda() {
@@ -83,7 +81,7 @@ public class Agenda {
         mVisualization.createOption("Ver tarefas", __ -> this.getTaskPage().view());
         mVisualization.createOption("Marcar tarefa como feita", __ -> this.getTaskPage().markTaskDone());
         mVisualization.createOption("Marcar tarefa como não feita", __ -> this.getTaskPage().markTaskNotDone());
-        mVisualization.createOption("Filtrar por data", __ -> this.filterByDate());
+        mVisualization.createOption("Filtrar por data", __ -> this.viewByDate());
 
         this.menus = new HashMap<>();
 
@@ -110,7 +108,7 @@ public class Agenda {
             AgendaOutput.clear();
             this.showTitle();
 
-            AgendaOutput.section(this.menu.toString());
+            AgendaOutput.section(this.menuName);
 
             this.currentMenu.show();
             
@@ -140,14 +138,15 @@ public class Agenda {
         System.out.println("   |     | +-----+ +----- |    \\| +--°   |     |");
     }
 
-    private void filterByDate() {
-        LocalDate date = AgendaInput.inputDate("Digite a data para filtrar");
+    private void viewByDate() {
+        LocalDate date = AgendaInput.inputDate("Digite a data para filtrar: ");
 
         this.viewAllByDate(date);
     }
 
     private void viewAllByDate(LocalDate date) {
         List<AgendaActivity> activities = new ArrayList<>();
+
         activities.addAll(this.getEventPage().getByDate(date));
         activities.addAll(this.getReminderPage().getByDate(date));
         activities.addAll(this.getTaskPage().getByDate(date));
@@ -164,6 +163,18 @@ public class Agenda {
 
     /* getters e setters */
 
+    private String getMenuName(MENU menu) {
+        switch (menu) {
+            case MAIN: return "PRINCIPAL";
+            case CREATION: return "CRIAR";
+            case CHANGE: return "ALTERAR";
+            case CANCEL: return "CANCELAR";
+            case VIEW: return "VISUALIZAR";
+        }
+        return "";
+    }
+
+
     private TaskPage getTaskPage() {
         return (TaskPage) this.pages.get(PAGE.TASK);
     }
@@ -177,7 +188,7 @@ public class Agenda {
     }
 
     private void setCurrentMenu(MENU menuName) {
-        this.menu = menuName;
+        this.menuName = this.getMenuName(menuName);
         this.currentMenu = this.menus.get(menuName);
     }
 }

@@ -1,4 +1,4 @@
-package agendapages.pages;
+package agenda.pages;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

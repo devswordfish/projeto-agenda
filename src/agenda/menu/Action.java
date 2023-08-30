@@ -1,4 +1,4 @@
-package agendapages.menu;
+package agenda.menu;
 
 @FunctionalInterface
 public interface Action<T> {

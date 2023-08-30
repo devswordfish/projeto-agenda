@@ -1,4 +1,4 @@
-package agendapages.activities;
+package agenda.activities;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;

@@ -1,10 +1,10 @@
-package agendapages.activities;
+package agenda.activities;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import agendapages.datetime.AgendaChronologicalOrderException;
+import agenda.datetime.AgendaChronologicalOrderException;
 
 public class Event extends AgendaActivity {
     private String description;

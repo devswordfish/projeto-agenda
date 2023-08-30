@@ -1,4 +1,4 @@
-package agendapages.menu;
+package agenda.menu;
 
 public class Option<T> {
     private String option;

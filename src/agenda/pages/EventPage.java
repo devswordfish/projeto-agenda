@@ -1,21 +1,19 @@
-package agendapages.pages;
+package agenda.pages;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.List;
 
-import agendapages.activities.Event;
-import agendapages.datetime.AgendaChronologicalOrderException;
-import agendapages.datetime.AgendaDateTime;
-
-import agendapages.io.AgendaInput;
-import agendapages.io.AgendaOutput;
-
-import agendapages.menu.Menu;
-import agendapages.menu.Option;
-import agendapages.menu.Action;
+import agenda.activities.Event;
+import agenda.datetime.AgendaChronologicalOrderException;
+import agenda.datetime.AgendaDateTime;
+import agenda.io.AgendaInput;
+import agenda.io.AgendaOutput;
+import agenda.menu.Menu;
+import agenda.menu.Option;
 
 public class EventPage extends ActivityPage<Event> {
     private static final Menu<Event> menuChange = new Menu<>(0);
@@ -88,13 +86,13 @@ public class EventPage extends ActivityPage<Event> {
 
         while (true) {
             // pega a data do início do evento
-            startDate = AgendaInput.inputDate("Digite a data de início do evento (formato - dia/mês/ano): ");
+            startDate = AgendaInput.inputDate("Digite a data de início do evento: ");
 
             // verifica se a data informada já passou
             if (AgendaDateTime.hasDatePassedFromNow(startDate)) AgendaOutput.warningMessage("A data informada já passou");
 
             // pega o horário do início do evento
-            startTime = AgendaInput.inputTime("Digite o horário de início do evento (formato - horas:minutos:segundos): ");
+            startTime = AgendaInput.inputTime("Digite o horário de início do evento: ");
             
             // verifica se o horário informado já passou
             if (AgendaDateTime.hasTimePassedFromNow(startDate, startTime)) AgendaOutput.warningMessage("O horário informado já passou");
@@ -115,7 +113,7 @@ public class EventPage extends ActivityPage<Event> {
             endDate = null;
 
             while (endDate == null) {
-                endDate = AgendaInput.inputDate("Digite a data de término do evento (formato - dia/mês/ano): ");
+                endDate = AgendaInput.inputDate("Digite a data de término do evento: ");
 
                 // trata o erro no qual o usuário pode digitar uma data de término antes do início do evento
                 if (endDate.isBefore(startDate)) {
@@ -131,7 +129,7 @@ public class EventPage extends ActivityPage<Event> {
             endTime = null;
 
             while (endTime == null) {
-                endTime = AgendaInput.inputTime("Digite o horário de término do evento (formato - horas:minutos:segundos): ");
+                endTime = AgendaInput.inputTime("Digite o horário de término do evento: ");
                 
                 // trata o erro no qual o usuário pode digitar um horário de término antes do horário do início evento do mesmo dia
                 if (endDate.isEqual(startDate) && !endTime.isAfter(startTime)) {
@@ -252,7 +250,7 @@ public class EventPage extends ActivityPage<Event> {
 
     @Override
     public List<Event> getByDate(LocalDate date) {
-        return this.elements.stream().filter(task -> task.getStartDate() == date).toList();
+        return this.elements.stream().filter(event -> event.getStartDate().isEqual(date)).toList();
     }
 
     // cria o menu de alterações
@@ -271,7 +269,7 @@ public class EventPage extends ActivityPage<Event> {
 
             while (startDate == null) {
                 do {
-                    startDate = AgendaInput.inputDate("Digite a nova data de início (formato - dia/mês/ano): ");
+                    startDate = AgendaInput.inputDate("Digite a nova data de início: ");
                 } while (this.checkEventCollision(LocalDateTime.of(startDate, event.getStartTime()), event.getEndDateTime()));
 
                 try {
@@ -289,7 +287,7 @@ public class EventPage extends ActivityPage<Event> {
 
             while (startTime == null) {
                 do {
-                    startTime = AgendaInput.inputTime("Digite o novo horário de início (formato - horas:minutos:segundos): ");
+                    startTime = AgendaInput.inputTime("Digite o novo horário de início: ");
                 } while (this.checkEventCollision(LocalDateTime.of(event.getStartDate(), startTime), event.getEndDateTime()));
 
                 try {
@@ -307,7 +305,7 @@ public class EventPage extends ActivityPage<Event> {
 
             while (endDate == null) {
                 do {
-                    endDate = AgendaInput.inputDate("Digite a nova data de término (formato - dia/mês/ano): ");
+                    endDate = AgendaInput.inputDate("Digite a nova data de término: ");
                 } while (this.checkEventCollision(event.getStartDateTime(), LocalDateTime.of(endDate, event.getEndTime())));
 
                 try {
@@ -325,7 +323,7 @@ public class EventPage extends ActivityPage<Event> {
 
             while (endTime == null) {
                 do {
-                    endTime = AgendaInput.inputTime("Digite o novo horário de término (formato - horas:minutos:segundos): ");
+                    endTime = AgendaInput.inputTime("Digite o novo horário de término: ");
                 } while (this.checkEventCollision(event.getStartDateTime(), LocalDateTime.of(event.getEndDate(), endTime)));
 
                 try {

@@ -1,12 +1,12 @@
-package agendapages.io;
+package agenda.io;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 import java.util.Scanner;
 
-import agendapages.datetime.AgendaDateTimeFormatException;
-import agendapages.datetime.AgendaDateTime;
+import agenda.datetime.AgendaDateTime;
+import agenda.datetime.AgendaDateTimeFormatException;
 
 public abstract class AgendaInput {
     private static Scanner scanner = new Scanner(System.in);
@@ -44,6 +44,7 @@ public abstract class AgendaInput {
         LocalDate date = null;
 
         while (date == null) {
+            System.out.println("Formato: dd/mm/yyyy - mês e ano podem ser omitidos e caso sejam estaram se referindo ao mês e ao ano atual");
             System.out.print(inputMessage);
             String dateString = scanner.nextLine().strip();
 
@@ -61,6 +62,7 @@ public abstract class AgendaInput {
         LocalTime time = null;
 
         while (time == null) {
+            System.out.println("Formato: hh:mm:ss - minutos e segundos podem ser omitidos e caso sejam estaram se referindo aos minutos e os segundos atuais");
             System.out.print(inputMessage);
             String timeString = scanner.nextLine().strip();
 

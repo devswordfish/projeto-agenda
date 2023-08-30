@@ -1,4 +1,4 @@
-package agendapages.datetime;
+package agenda.datetime;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -43,9 +43,7 @@ public abstract class AgendaDateTime {
             } catch (DateTimeParseException e) {}
         }
 
-        if (!ok) {
-            throw new AgendaDateTimeFormatException("Não foi possível converter a string \"" + dateString + "\"");
-        }
+        if (!ok) throw new AgendaDateTimeFormatException("Não foi possível converter a string \"" + dateString + "\"");
 
         return date;
     }
@@ -74,9 +72,7 @@ public abstract class AgendaDateTime {
             } catch (DateTimeParseException e) {}
         }
 
-        if (!ok) {
-            throw new AgendaDateTimeFormatException("Não foi possível converter a string \"" + timeString + "\"");
-        }
+        if (!ok) throw new AgendaDateTimeFormatException("Não foi possível converter a string \"" + timeString + "\"");
 
         return time;
     }

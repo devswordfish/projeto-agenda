@@ -1,13 +1,13 @@
-package agendapages.pages;
+package agenda.pages;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Predicate;
 
-import agendapages.activities.AgendaActivity;
-import agendapages.menu.Action;
-import agendapages.menu.Menu;
-import agendapages.menu.Option;
+import agenda.activities.AgendaActivity;
+import agenda.menu.Action;
+import agenda.menu.Menu;
+import agenda.menu.Option;
 
 public abstract class ActivityPage<T extends AgendaActivity> extends Page<T> {
     public ActivityPage(String file) {

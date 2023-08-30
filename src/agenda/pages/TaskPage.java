@@ -1,19 +1,16 @@
-package agendapages.pages;
+package agenda.pages;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
 import java.util.List;
 
-import agendapages.activities.Task;
-
-import agendapages.datetime.AgendaDateTime;
-
-import agendapages.io.AgendaInput;
-import agendapages.io.AgendaOutput;
-
-import agendapages.menu.Menu;
-import agendapages.menu.Option;
-import agendapages.menu.Action;
+import agenda.activities.Task;
+import agenda.datetime.AgendaDateTime;
+import agenda.io.AgendaInput;
+import agenda.io.AgendaOutput;
+import agenda.menu.Menu;
+import agenda.menu.Option;
 
 public class TaskPage extends ActivityPage<Task> {
     private static final Menu<Task> menuChange = new Menu<>(0);
@@ -48,7 +45,7 @@ public class TaskPage extends ActivityPage<Task> {
         String name = AgendaInput.inputString("Digite o nome da tarefa: ");
 
         // pega a data de quando essa tarefa deve acontecer
-        LocalDate date = AgendaInput.inputDate("Digite a data da tarefa (formato - dia/mês/ano): ");
+        LocalDate date = AgendaInput.inputDate("Digite a data da tarefa: ");
 
         // verifica se a data informada já passou
         if (AgendaDateTime.hasDatePassedFromNow(date)) AgendaOutput.warningMessage("A data informada já passou");
@@ -178,8 +175,9 @@ public class TaskPage extends ActivityPage<Task> {
 
                 filteredList = this.filter(task -> !task.isCompleted());
             }
-        } else {
+        } else {   
             AgendaOutput.okMessage("Sem tarefas!");
+            AgendaInput.holdScreen();
         }
     }
 
@@ -191,7 +189,6 @@ public class TaskPage extends ActivityPage<Task> {
             int option = -1;
 
             while (filteredList.size() != 0 && option != 0) {
-
                 menu = this.enumeratedElements(
                     filteredList,
                     task -> {
@@ -208,14 +205,15 @@ public class TaskPage extends ActivityPage<Task> {
 
                 filteredList = this.filter(task -> task.isCompleted());
             }
-        } else {
+        } else {   
             AgendaOutput.okMessage("Sem tarefas!");
+            AgendaInput.holdScreen();
         }
     }
 
     @Override
     public List<Task> getByDate(LocalDate date) {
-        return this.filter(task -> task.getDate() == date);
+        return this.filter(task -> task.getDate().isEqual(date));
     }
 
     // cria o menu de alterações
@@ -229,7 +227,7 @@ public class TaskPage extends ActivityPage<Task> {
             LocalDate startDate = null;
 
             while (startDate == null) {
-                startDate = AgendaInput.inputDate("Digite a nova data (formato - dia/mês/ano): ");
+                startDate = AgendaInput.inputDate("Digite a nova data: ");
 
                 task.setDate(startDate);
             }

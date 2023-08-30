@@ -1,20 +1,18 @@
-package agendapages.pages;
+package agenda.pages;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.List;
 
-import agendapages.activities.Reminder;
-import agendapages.datetime.AgendaDateTime;
-
-import agendapages.io.AgendaInput;
-import agendapages.io.AgendaOutput;
-
-import agendapages.menu.Menu;
-import agendapages.menu.Option;
-import agendapages.menu.Action;
+import agenda.activities.Reminder;
+import agenda.datetime.AgendaDateTime;
+import agenda.io.AgendaInput;
+import agenda.io.AgendaOutput;
+import agenda.menu.Menu;
+import agenda.menu.Option;
 
 public class ReminderPage extends ActivityPage<Reminder> {
     private static final Menu<Reminder> menuChange = new Menu<>(0);
@@ -49,13 +47,13 @@ public class ReminderPage extends ActivityPage<Reminder> {
         String name = AgendaInput.inputString("Digite o nome do lembrete: ");
 
         // pega a data de quando o lembrete deve ser ativado
-        LocalDate date = AgendaInput.inputDate("Digite a data do lembrete (formato - dia/mês/ano): ");
+        LocalDate date = AgendaInput.inputDate("Digite a data do lembrete: ");
 
         // verifica se a data informada já passou
         if (AgendaDateTime.hasDatePassedFromNow(date)) AgendaOutput.warningMessage("A data informada já passou");
 
         // pega o horário de quando o lembrete deve ser ativado
-        LocalTime time = AgendaInput.inputTime("Digite o horário do lembrete (formato - horas:minutos:segundos): ");
+        LocalTime time = AgendaInput.inputTime("Digite o horário do lembrete: ");
 
         // verifica se o horário informado já passou
         if (AgendaDateTime.hasTimePassedFromNow(date, time)) AgendaOutput.warningMessage("O horário informado já passou");
@@ -166,7 +164,7 @@ public class ReminderPage extends ActivityPage<Reminder> {
 
     @Override
     public List<Reminder> getByDate(LocalDate date) {
-        return this.elements.stream().filter(task -> task.getDate() == date).toList();
+        return this.elements.stream().filter(reminder -> reminder.getDate().isEqual(date)).toList();
     }
 
     // cria o menu de alterações
@@ -180,7 +178,7 @@ public class ReminderPage extends ActivityPage<Reminder> {
             LocalDate date = null;
 
             while (date == null) {
-                date = AgendaInput.inputDate("Digite a nova data (formato - dia/mês/ano): ");
+                date = AgendaInput.inputDate("Digite a nova data: ");
 
                 reminder.setDate(date);
             }
@@ -191,7 +189,7 @@ public class ReminderPage extends ActivityPage<Reminder> {
             LocalTime time = null;
 
             while (time == null) {
-                time = AgendaInput.inputTime("Digite o novo horário (formato - horas:minutos:segundos): ");
+                time = AgendaInput.inputTime("Digite o novo horário: ");
 
                 reminder.setTime(time);
             }
